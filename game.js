@@ -36,7 +36,7 @@ function Engine() {
   this.max_step = 0.05;
   this.last_timestamp = 0;
 
-  this.show_fps = false;
+  this.show_fps = true;
   this.fps = 0;
   this.fps_stats = new Array(60);
 
@@ -530,3 +530,32 @@ Entity.prototype.rotateAndCache = function(image, angle) {
   offscreenCtx.restore();
   return offscreenCanvas;
 }*/
+
+//-----------------------------------------------------
+// Animation
+//-----------------------------------------------------
+
+function Animation(game, sprite_list, frame_duration, loop) {
+  this.game = game;
+  this.sprite_list = sprite_list;
+  this.frame_duration = frame_duration;
+  this.total_time = sprite_list.length * frame_duration;
+  this.elapsed_time = 0;
+  this.loop = loop;
+}
+
+Animation.prototype.getFrame = function(delta) {
+  this.elapsed_time += delta;
+  if(this.elapsed_time > this.total_time) {
+    if(this.loop) {
+      this.elapsed_time %= this.total_time;
+    }
+    else {
+      this.elapsed_time = this.total_time+1;
+      return;
+    }
+  }
+
+  var index = Math.floor(this.elapsed_time / this.frame_duration);
+  return this.sprite_list[index];
+}
