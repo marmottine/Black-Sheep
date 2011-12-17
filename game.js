@@ -47,6 +47,8 @@ function Engine() {
   
   this.canvas_width = null;
   this.canvas_height = null;
+
+  this.inputEvents = [];
 }
 
 Engine.prototype.init = function(element, width, height, image_list, sound_list, callback) {
@@ -104,6 +106,48 @@ Engine.prototype.init = function(element, width, height, image_list, sound_list,
     }
     this.sounds[path] = snd;
   }
+
+  // listen to input events
+  this.context.canvas.addEventListener('mousedown', this.mouseDown.bind(this));
+  this.context.canvas.addEventListener('mouseup', this.mouseUp.bind(this));
+  this.context.canvas.addEventListener('mouseout', this.mouseOut.bind(this));
+}
+
+Engine.prototype.mouseDown = function(e) {
+  // 'this' is the game because of bind
+  console.log("mouseDown ");
+  if (e.pageX > this.context.canvas.offsetLeft &&
+      e.pageX < this.context.canvas.offsetLeft + this.context.canvas.width &&
+      e.pageY > this.context.canvas.offsetTop &&
+      e.pageY < this.context.canvas.offsetTop + this.context.canvas.height) {
+      console.log("add event");
+    this.inputEvents.push({event:"mdown",
+                       x: e.pageX - this.context.canvas.offsetLeft,
+                       y: e.pageY - this.context.canvas.offsetTop});
+  }
+}
+
+Engine.prototype.mouseUp = function(e) {
+  if (e.pageX > this.context.canvas.offsetLeft &&
+      e.pageX < this.context.canvas.offsetLeft + this.width &&
+      e.pageY > this.context.canvas.offsetTop &&
+      e.pageY < this.context.canvas.offsetTop + this.height) {
+    this.inputEvents.push({event:"mup",
+                       x: e.pageX - this.context.canvas.offsetLeft,
+                       y: e.pageY - this.context.canvas.offsetTop});
+  }
+  else {
+    console.log("mouse up outside canvas");
+    this.inputEvents.push({event:"mup",
+                       x: -1,
+                       y: -1});
+  }
+}
+
+Engine.prototype.mouseOut = function(e) {
+    this.inputEvents.push({event:"mout",
+                       x: -2,
+                       y: -2});
 }
 
 Engine.prototype.load_progress = function(loaded, total, callback) {
@@ -203,6 +247,7 @@ Engine.prototype.update = function() {
       node.entity.update();
     }
   }
+  this.inputEvents = [];
 
   // loop again, remove those marked for removal
   node = null;
@@ -490,7 +535,7 @@ function Entity(game, x, y, w, h) {
 }
 
 Entity.prototype.update = function() {
-  if (this.outsideScreen()) {
+ if (this.outsideScreen()) {
     this.toberemoved = true;
   }
 }

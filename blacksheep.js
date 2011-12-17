@@ -143,12 +143,70 @@ function Cannon(game, lane, x) {
   this.width = 80;
   this.height = 60;
   this.radius = 40;
+  this.dragged = false;
 }
 
 Cannon.prototype = new Entity();
 Cannon.prototype.constructor = Cannon;
 
+Cannon.prototype.saveState = function() {
+  this.lastX = this.x;
+  this.lastY = this.y;
+}
+
+Cannon.prototype.restoreState = function() {
+  this.x = this.lastX;
+  this.y = this.lastY;
+}
+
 Cannon.prototype.update = function() {
+
+  var that = this;
+  var mouseMove = function(e) {
+    if (that.dragged) {
+      that.x = e.pageX - that.game.context.canvas.offsetLeft;
+      that.y = e.pageY - that.game.context.canvas.offsetTop;
+    }
+  }
+
+  // check inputs
+  var eventsToBeRemoved = [];
+  for (var i = 0 ; i < this.game.inputEvents.length ; i++) {
+    var event = this.game.inputEvents[i];
+    if (this.dragged == false &&
+        event.event == "mdown" &&
+        event.x > this.x - this.width/2 &&
+        event.x < this.x + this.width/2 &&
+        event.y > this.y - this.height/2 &&
+        event.y < this.y + this.height/2) {
+      console.log('cannon dragged on');
+      // FIXME: add only once!
+      this.game.context.canvas.addEventListener('mousemove', mouseMove);
+      this.saveState();
+      this.dragged = true;
+      eventsToBeRemoved.push(i);
+    }
+    else if (event.event == "mup") {
+      if (this.dragged) {
+        console.log('cannon dragged off');
+        this.game.context.canvas.removeEventListener('mousemove', mouseMove);
+        this.dragged = false;
+        this.saveState();
+      }
+    }
+    else if (event.event == "mout") {
+      if (this.dragged) {
+        console.log('out');
+        this.game.context.canvas.removeEventListener('mousemove', mouseMove);
+        this.restoreState();
+        this.dragged = false;
+      }
+    }
+  }
+  for (var i = 0 ; i < eventsToBeRemoved.length ; i++) {
+    this.game.inputEvents.splice(i);
+  }
+
   Entity.prototype.update.call(this);
 }
 
