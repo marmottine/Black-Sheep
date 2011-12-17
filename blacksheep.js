@@ -6,7 +6,11 @@ var game = null;
 
 window.onload = function() {
   var element = document.getElementById('surface');
-  var image_list = ['grass', 'cannon', 'paintball', 'sprinkle0', 'sprinkle1', 'sprinkle2', 'sheep1', 'fence3'];
+
+  var image_list = ['grass', 'cannon', 'paintball',
+                    'sprinkle0', 'sprinkle1', 'sprinkle2',
+                    'sheep1', 'sheep2', 'sheep3', 'sheep4',
+                    'fence3'];
   var sound_list = ['pew'];
   game = new BlackSheep();
   game.init(element, 640, 480, image_list, sound_list,
@@ -27,6 +31,7 @@ BlackSheep.prototype.constructor = BlackSheep;
 
 BlackSheep.prototype.start = function() {
   this.createType("sheep");
+  this.createType("fence");
   this.createLayer(2);
   this.createLayer(1);
   this.sheep = new Sheep(this, 2);
@@ -56,7 +61,11 @@ BlackSheep.prototype.draw = function() {
 function Sheep(game, lane) {
   Entity.call(this, game);
   this.speed = 2;
-  this.sprite = this.rotateAndCache(game.images['sheep1'], Math.PI/2);
+//  this.sprite = game.images['sheep1'];
+  this.animation = new Animation(game, [this.game.images['sheep1'],
+                                        this.game.images['sheep2'],
+                                        this.game.images['sheep3'],
+                                        this.game.images['sheep4'] ], 1, true);
   this.lane = lane;
   this.x = game.width*0.9;
   this.y = lane*60 + 30;
@@ -74,6 +83,8 @@ Sheep.prototype.update = function() {
 }
 
 Sheep.prototype.draw = function(ctx) {
+  this.sprite = this.animation.getFrame(this.game.delta);
+//  this.animation.drawFrame(this.x, this.y);
   this.drawSpriteCentered(ctx);
   Entity.prototype.draw.call(this, ctx);
 }
@@ -84,7 +95,7 @@ Sheep.prototype.draw = function(ctx) {
 
 function Fence(game, lane) {
   Entity.call(this, game);
-  this.sprite = this.rotateAndCache(game.images['fence3'], Math.PI/2);
+  this.sprite = game.images['fence3'];
   this.lane = lane;
   this.x = 100;
   this.y = lane*60 + 30;
@@ -104,4 +115,3 @@ Fence.prototype.draw = function(ctx) {
   this.drawSpriteCentered(ctx);
   Entity.prototype.draw.call(this, ctx);
 }
-

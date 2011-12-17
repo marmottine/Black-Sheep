@@ -36,7 +36,7 @@ function Engine() {
   this.max_step = 0.05;
   this.last_timestamp = 0;
 
-  this.show_fps = false;
+  this.show_fps = true;
   this.fps = 0;
   this.fps_stats = new Array(60);
 
@@ -99,13 +99,12 @@ Engine.prototype.init = function(element, width, height, image_list, sound_list,
     } else {
       snd.src = 'snd/' + path + '.mp3';
     }
-    console.log('loading sound ' + snd.src);
     this.sounds[path] = snd;
   }
 }
 
 Engine.prototype.load_progress = function(loaded, total, callback) {
-  console.log("resource load progress: " + loaded + ' of ' + total);
+  // console.log("resource load progress: " + loaded + ' of ' + total);
   if(loaded === total) {
     if(callback) {
       callback();
@@ -199,10 +198,10 @@ Engine.prototype.update = function() {
     if (node == null) {
       continue;
     }
-    node.data.update();
+    node.entity.update();
     while (node.Lnext !== null) {
       node = node.Lnext;
-      node.data.update();
+      node.entity.update();
     }
   }
 
@@ -213,12 +212,12 @@ Engine.prototype.update = function() {
     if (node == null) {
       continue;
     }
-    if (node.data.toberemoved) {
+    if (node.entity.toberemoved) {
         this.removeEntity(node);
       }
     while (node.Lnext !== null) {
       node = node.Lnext;
-      if (node.data.toberemoved) {
+      if (node.entity.toberemoved) {
         this.removeEntity(node);
       }
     }
@@ -281,15 +280,14 @@ Engine.prototype.draw = function() {
     if (node == null) {
       continue;
     }
-    node.data.draw(this.context);
+    node.entity.draw(this.context);
     ndraw ++;
     while (node.Lnext !== null) {
       node = node.Lnext;
-      node.data.draw(this.context);
+      node.entity.draw(this.context);
       ndraw ++;
     }
   }
-  console.log(ndraw + " entities have been drawn");
 
   if(this.focused === false) {
     this.context.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -324,9 +322,9 @@ Engine.prototype.createLayer = function (layer) {
   }
 };
 
-Engine.prototype.addEntity = function (data, type, layer) {
+Engine.prototype.addEntity = function(entity, type, layer) {
   var node = {
-    data: data,
+    entity: entity,
     Tnext: null,
     Tprev: null,
     Lnext: null,
@@ -369,7 +367,7 @@ Engine.prototype.addEntity = function (data, type, layer) {
 };
 
 Engine.prototype.removeEntity = function (node) {
-  console.log("removeEntity " + node.data);
+  console.log("removeEntity " + node.entity);
   var w = this.world;
 
   // remove from the type list
@@ -495,7 +493,7 @@ Entity.prototype.draw = function() {
   if (this.game.show_outlines && this.width) {
     this.game.context.beginPath();
     this.game.context.strokeStyle = "red";
-    this.game.context.arc(this.x, this.y, this.width/Math.PI, 0, Math.PI*2, false);
+    this.game.context.arc(this.x, this.y, this.width/2, 0, Math.PI*2, false);
     this.game.context.stroke();
     this.game.context.closePath();
   }
@@ -516,6 +514,7 @@ Entity.prototype.outsideScreen = function() {
           this.y + this.height/2 < 0 );
 }
 
+/*
 Entity.prototype.rotateAndCache = function(image, angle) {
   var offscreenCanvas = document.createElement('canvas');
   var size = Math.max(image.width, image.height);
@@ -528,4 +527,33 @@ Entity.prototype.rotateAndCache = function(image, angle) {
   offscreenCtx.drawImage(image, -(image.width/2), -(image.height/2));
   offscreenCtx.restore();
   return offscreenCanvas;
+}*/
+
+//-----------------------------------------------------
+// Animation
+//-----------------------------------------------------
+
+function Animation(game, sprite_list, frame_duration, loop) {
+  this.game = game;
+  this.sprite_list = sprite_list;
+  this.frame_duration = frame_duration;
+  this.total_time = sprite_list.length * frame_duration;
+  this.elapsed_time = 0;
+  this.loop = loop;
+}
+
+Animation.prototype.getFrame = function(delta) {
+  this.elapsed_time += delta;
+  if(this.elapsed_time > this.total_time) {
+    if(this.loop) {
+      this.elapsed_time %= this.total_time;
+    }
+    else {
+      this.elapsed_time = this.total_time+1;
+      return;
+    }
+  }
+
+  var index = Math.floor(this.elapsed_time / this.frame_duration);
+  return this.sprite_list[index];
 }
