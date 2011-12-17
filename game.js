@@ -512,9 +512,9 @@ Entity.prototype.drawSpriteCentered = function(ctx) {
 }
 
 Entity.prototype.outsideScreen = function() {
-  return (this.x - this.width/2 > this.game.context.canvas.width ||
+  return (this.x - this.width/2 > this.game.width ||
           this.x + this.width/2 < 0 ||
-          this.y - this.height/2 > this.game.context.canvas.height ||
+          this.y - this.height/2 > this.game.height ||
           this.y + this.height/2 < 0 );
 }
 
