@@ -11,11 +11,10 @@ window.onload = function() {
                     'sprinkle0', 'sprinkle1', 'sprinkle2',
                     'sheep1', 'sheep2', 'sheep3', 'sheep4',
                     'fence3'];
-  var sound_list = ['pew'];
+  var sound_list = ['baa0', 'baa1', 'baa2'];
   game = new BlackSheep();
   game.init(element, 640, 480, image_list, sound_list,
             function() { game.start(); });
-  //game.show_outlines = true; // debug
 }
 
 //-----------------------------------------------------
@@ -44,6 +43,16 @@ BlackSheep.prototype.start = function() {
   }
   this.addEntity(this.sheep, "sheep", 2);
   Engine.prototype.start.call(this);
+
+  var that = this;
+  this.context.canvas.addEventListener('mousedown', function(e) {
+    var coord = that.getXY(e);
+    console.log("mousedown " + coord.x + " " + coord.y);
+  });
+
+  this.context.canvas.onmouseup = function() {
+    console.log("mouseup");
+  }
 }
 
 BlackSheep.prototype.update = function() {
@@ -61,7 +70,6 @@ BlackSheep.prototype.draw = function() {
 function Sheep(game, lane) {
   Entity.call(this, game);
   this.speed = 2;
-//  this.sprite = game.images['sheep1'];
   this.animation = new Animation(game, [this.game.images['sheep1'],
                                         this.game.images['sheep2'],
                                         this.game.images['sheep3'],
@@ -84,7 +92,6 @@ Sheep.prototype.update = function() {
 
 Sheep.prototype.draw = function(ctx) {
   this.sprite = this.animation.getFrame(this.game.delta);
-//  this.animation.drawFrame(this.x, this.y);
   this.drawSpriteCentered(ctx);
   Entity.prototype.draw.call(this, ctx);
 }

@@ -112,6 +112,13 @@ Engine.prototype.load_progress = function(loaded, total, callback) {
   }
 }
 
+Engine.prototype.getXY = function(e) {
+  // return coordinates relative to game
+  var x = e.clientX - this.context.canvas.getBoundingClientRect().left - this.offset.x;
+  var y = e.clientY - this.context.canvas.getBoundingClientRect().top - this.offset.y;
+  return {x: x, y: y};
+}
+
 Engine.prototype.start = function() {
   // this.sounds['music'].play();
   console.log("engine start");
@@ -129,18 +136,7 @@ Engine.prototype.start = function() {
 
   this.context.canvas.focus();
 
-  var getXandY = function(e) {
-    var x = e.clientX;
-    x -= that.context.canvas.getBoundingClientRect().left;
-    x -= that.context.canvas.width/2;
-    var y = e.clientY;
-    y -= that.context.canvas.getBoundingClientRect().top;
-    y -= that.context.canvas.height/2;
-    return {x: x, y: y};
-  }
-    
-  var that = this;
-    
+/*  var that = this;
   this.context.canvas.addEventListener("click", function(e) {
     that.click = getXandY(e);
     // stop event from propagating to DOM parents
@@ -151,7 +147,7 @@ Engine.prototype.start = function() {
     
   this.context.canvas.addEventListener("mousemove", function(e) {
     that.mouse = getXandY(e);
-  });
+  });*/
 
   var that = this;
   (function gameLoop() {
@@ -235,21 +231,21 @@ Engine.prototype.draw = function() {
   var base_ratio = this.width / this.height;
   var canvas_ratio = this.canvas_width / this.canvas_height;
 
-  var offsetx = 0, offsety = 0;
+  this.offset = {x: 0, y:0};
   if(canvas_ratio > base_ratio) {
     // too wide
     this.element.width = this.height * canvas_ratio;
     this.element.height = this.height;
-    offsetx = (this.element.width - this.width)/2;
+    this.offset.x = (this.element.width - this.width)/2;
   } else {
     // too tall
     this.element.width = this.width;
     this.element.height = this.width / canvas_ratio;
-    offsety = (this.element.height - this.height)/2;
+    this.offset.y = (this.element.height - this.height)/2;
   }
 
   this.context.save();
-  this.context.translate(offsetx, offsety);
+  this.context.translate(this.offset.x, this.offset.y);
   this.context.beginPath();
   this.context.moveTo(0, 0);
   this.context.lineTo(this.width, 0);
@@ -297,7 +293,7 @@ Engine.prototype.draw = function() {
   if(this.show_fps) {
     this.context.font = "22px Arial";
     this.context.textBaseline = "top";
-    this.context.fillStyle = "blue";
+    this.context.fillStyle = "red";
     this.context.fillText(this.fps, 0, 0);
   }
   this.context.restore();
