@@ -11,7 +11,6 @@ window.onload = function() {
   game = new BlackSheep();
   game.init(element, 640, 480, image_list, sound_list,
             function() { game.start(); });
-  game.showOutlines = true;
 }
 
 //-----------------------------------------------------
@@ -49,7 +48,7 @@ BlackSheep.prototype.draw = function() {
 function Sheep(game, lane) {
   Entity.call(this, game);
   this.speed = 2;
-  this.sprite = this.rotateAndCache(game.images['sheep1'], Math.PI/2);
+  this.sprite = game.images['sheep1'];
   this.lane = lane;
   this.x = game.width*0.9;
   this.y = lane*60 + 30;
@@ -63,14 +62,11 @@ Sheep.prototype = new Entity();
 Sheep.prototype.constructor = Sheep;
 
 Sheep.prototype.update = function() {
-  console.log("Sheep update");
   this.x -= this.speed;
   Entity.prototype.update.call(this);
 }
 
 Sheep.prototype.draw = function(ctx) {
-  console.log("Sheep draw at " + this.x + ' ' + this.y);
   this.drawSpriteCentered(ctx);
   Entity.prototype.draw.call(this, ctx);
 }
-
