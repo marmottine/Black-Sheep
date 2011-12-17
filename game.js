@@ -274,7 +274,7 @@ Engine.prototype.draw = function() {
       this.context.drawImage(this.images['grass'], x*80, y*60, 80, 60);
     }
   }
-  this.context.drawImage(this.images['cannon'], 80*2, 60, 80, 60);
+
   this.context.drawImage(this.images['paintball'], 80*4, 60, 80, 60);
   var v = Math.floor(this.time*10 % 3);
   this.context.drawImage(this.images['sprinkle'+v], 80*4, 60*3, 80, 60);

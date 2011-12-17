@@ -31,17 +31,24 @@ BlackSheep.prototype.constructor = BlackSheep;
 BlackSheep.prototype.start = function() {
   this.createType("sheep");
   this.createType("fence");
+  this.createType("cannon");
   this.createLayer(2);
   this.createLayer(1);
-  this.sheep = new Sheep(this, 2);
+
   var fence;
-  this.fences = [];
   for (var i = 0 ; i < 8 ; i++) {
     fence = new Fence(this, i);
-    this.fences.push(fence);
     this.addEntity(fence, "fence", 1);
   }
-  this.addEntity(this.sheep, "sheep", 2);
+
+  var sheep = new Sheep(this, 2);
+  this.addEntity(sheep, "sheep", 2);
+
+  var cannon = new Cannon(this, 3, 180);
+  this.addEntity(cannon, "cannon", 2);
+  var cannon = new Cannon(this, 1, 300);
+  this.addEntity(cannon, "cannon", 2);
+
   Engine.prototype.start.call(this);
 
   var that = this;
@@ -77,9 +84,9 @@ function Sheep(game, lane) {
   this.lane = lane;
   this.x = game.width*0.9;
   this.y = lane*60 + 30;
-  this.width = 100;
-  this.height = 100;
-  this.radius = 50;
+  this.width = 80;
+  this.height = 60;
+  this.radius = 40;
 }
 
 Sheep.prototype = new Entity();
@@ -106,9 +113,9 @@ function Fence(game, lane) {
   this.lane = lane;
   this.x = 100;
   this.y = lane*60 + 30;
-  this.width = 100;
-  this.height = 100;
-  this.radius = 50;
+  this.width = 80;
+  this.height = 60;
+  this.radius = 40;
 }
 
 Fence.prototype = new Entity();
@@ -119,6 +126,33 @@ Fence.prototype.update = function() {
 }
 
 Fence.prototype.draw = function(ctx) {
+  this.drawSpriteCentered(ctx);
+  Entity.prototype.draw.call(this, ctx);
+}
+
+//-----------------------------------------------------
+// Cannon
+//-----------------------------------------------------
+
+function Cannon(game, lane, x) {
+  Entity.call(this, game);
+  this.sprite = game.images['cannon'];
+  this.lane = lane;
+  this.x = x;
+  this.y = lane*60 + 30;
+  this.width = 80;
+  this.height = 60;
+  this.radius = 40;
+}
+
+Cannon.prototype = new Entity();
+Cannon.prototype.constructor = Cannon;
+
+Cannon.prototype.update = function() {
+  Entity.prototype.update.call(this);
+}
+
+Cannon.prototype.draw = function(ctx) {
   this.drawSpriteCentered(ctx);
   Entity.prototype.draw.call(this, ctx);
 }
