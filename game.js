@@ -44,6 +44,9 @@ function Engine() {
     types: {},
     layers: {}
   }
+  
+  this.canvas_width = null;
+  this.canvas_height = null;
 }
 
 Engine.prototype.init = function(element, width, height, image_list, sound_list, callback) {
@@ -152,10 +155,10 @@ Engine.prototype.start = function() {
   var that = this;
   (function gameLoop() {
     if (that.running) {
+      window.requestAnimFrame(gameLoop);
       that.tick();
       that.update();
       that.draw();
-      window.requestAnimFrame(gameLoop);
     }
   })();
 }
@@ -221,31 +224,36 @@ Engine.prototype.update = function() {
 }
 
 Engine.prototype.draw = function() {
-  this.canvas_width = parseInt(this.element.style.width) ||
-                      parseInt(this.element.width);
-  this.canvas_height = parseInt(this.element.style.height) ||
-                       parseInt(this.element.height);
-  this.element.style.width = this.canvas_width + 'px';
-  this.element.style.height = this.canvas_height + 'px';
 
-  var base_ratio = this.width / this.height;
-  var canvas_ratio = this.canvas_width / this.canvas_height;
+  var new_canvas_width = parseInt(this.element.style.width) ||
+                          parseInt(this.element.width);
+  var new_canvas_height = parseInt(this.element.style.height) ||
+                          parseInt(this.element.height);
+                          
+  if (new_canvas_width != this.canvas_width || new_canvas_height != this.canvas_height) {
+   this.canvas_width = new_canvas_width;
+   this.canvas_height = new_canvas_height;
+   this.element.style.width = this.canvas_width + 'px';
+   this.element.style.height = this.canvas_height + 'px';
 
-  this.offset = {x: 0, y:0};
-  if(canvas_ratio > base_ratio) {
-    // too wide
-    this.element.width = this.height * canvas_ratio;
-    this.element.height = this.height;
-    this.offset.x = (this.element.width - this.width)/2;
-    this.scale = this.canvas_height / this.height;
-  } else {
-    // too tall
-    this.element.width = this.width;
-    this.element.height = this.width / canvas_ratio;
-    this.offset.y = (this.element.height - this.height)/2;
-    this.scale = this.canvas_width / this.width;
+    var base_ratio = this.width / this.height;
+    var canvas_ratio = this.canvas_width / this.canvas_height;
+
+    this.offset = {x: 0, y:0};
+    if(canvas_ratio > base_ratio) {
+      // too wide
+      this.element.width = this.height * canvas_ratio;
+      this.element.height = this.height;
+      this.offset.x = (this.element.width - this.width)/2;
+      this.scale = this.canvas_height / this.height;
+    } else {
+      // too tall
+      this.element.width = this.width;
+      this.element.height = this.width / canvas_ratio;
+      this.offset.y = (this.element.height - this.height)/2;
+      this.scale = this.canvas_width / this.width;
+    }
   }
-
   this.context.save();
   this.context.translate(this.offset.x, this.offset.y);
   this.context.beginPath();
