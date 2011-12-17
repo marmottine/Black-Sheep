@@ -6,27 +6,25 @@ var game = null;
 
 window.onload = function() {
   var element = document.getElementById('surface');
-  var image_list = ['alien', 'sentry'];
-  var sound_list = ['pew', 'music'];
-  game = new MySimpleGame();
+  var image_list = ['grass', 'cannon', 'paintball', 'sprinkle0', 'sprinkle1', 'sprinkle2'];
+  var sound_list = ['pew'];
+  game = new BlackSheep();
   game.init(element, 640, 480, image_list, sound_list,
             function() { game.start(); });
 }
 
 //-----------------------------------------------------
-// MySimpleGame
+// BlackSheep
 //-----------------------------------------------------
 
-function MySimpleGame() {
-  console.log('mysimplegame constr');
+function BlackSheep() {
   Engine.call(this);
 }
 
-MySimpleGame.prototype = new Engine();
-MySimpleGame.prototype.constructor = MySimpleGame;
+BlackSheep.prototype = new Engine();
+BlackSheep.prototype.constructor = BlackSheep;
 
-MySimpleGame.prototype.start = function() {
-  console.log("mysimplegame start");
+BlackSheep.prototype.start = function() {
   this.createType("any entity");
   this.createLayer(2);
   this.createLayer(1);
@@ -37,13 +35,11 @@ MySimpleGame.prototype.start = function() {
   Engine.prototype.start.call(this);
 }
 
-MySimpleGame.prototype.update = function() {
-  console.log("mysimplegame update");
+BlackSheep.prototype.update = function() {
   Engine.prototype.update.call(this);
 }
 
-MySimpleGame.prototype.draw = function() {
-  console.log("mysimplegame draw");
+BlackSheep.prototype.draw = function() {
   Engine.prototype.draw.call(this);
 }
 
@@ -54,7 +50,7 @@ MySimpleGame.prototype.draw = function() {
 function MovingEntity(game) {
   Entity.call(this, game);
   this.speed = 10;
-  this.sprite = this.rotateAndCache(game.images['alien'], Math.random());
+  this.sprite = this.rotateAndCache(game.images['paintball'], Math.random());
   this.x = 10; // Math.random()*game.canvas_width;
   this.y = 10; // Math.random()*game.canvas_height;
   this.width = 100;
@@ -84,7 +80,7 @@ MovingEntity.prototype.draw = function(ctx) {
 
 function StaticEntity(game) {
   Entity.call(this, game);
-  this.sprite = this.rotateAndCache(game.images['sentry'], Math.random());
+  this.sprite = this.rotateAndCache(game.images['cannon'], Math.random());
   this.x = 300;
   this.y = 200;
   this.width = 100;

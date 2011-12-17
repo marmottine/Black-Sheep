@@ -36,7 +36,7 @@ function Engine() {
   this.max_step = 0.05;
   this.last_timestamp = 0;
 
-  this.show_fps = true;
+  this.show_fps = false;
   this.fps = 0;
   this.fps_stats = new Array(60);
 
@@ -52,15 +52,6 @@ Engine.prototype.init = function(element, width, height, image_list, sound_list,
   this.context = element.getContext("2d");
   this.width = width;
   this.height = height;
-
-  var that = this;
-  this.context.canvas.onfocus = function() {
-    that.focused = true;
-  }
-
-  this.context.canvas.onblur = function() {
-    that.focused = false;
-  }
 
   var loaded = 0;
   var total = image_list.length + sound_list.length;
@@ -96,6 +87,7 @@ Engine.prototype.init = function(element, width, height, image_list, sound_list,
       console.log('error loading ' + this.src);
       // TODO: handle error
     });
+
     snd.play = function() {
       var channel = this.cloneNode(true);
       channel.play();
@@ -122,10 +114,45 @@ Engine.prototype.load_progress = function(loaded, total, callback) {
 }
 
 Engine.prototype.start = function() {
-  //this.sounds['music'].play();
+  // this.sounds['music'].play();
   console.log("engine start");
   this.running = true;
+
+  // manage focus
+  var that = this;
+  this.context.canvas.onfocus = function() {
+    that.focused = true;
+  }
+
+  this.context.canvas.onblur = function() {
+    that.focused = false;
+  }
+
   this.context.canvas.focus();
+
+  var getXandY = function(e) {
+    var x = e.clientX;
+    x -= that.context.canvas.getBoundingClientRect().left;
+    x -= that.context.canvas.width/2;
+    var y = e.clientY;
+    y -= that.context.canvas.getBoundingClientRect().top;
+    y -= that.context.canvas.height/2;
+    return {x: x, y: y};
+  }
+    
+  var that = this;
+    
+  this.context.canvas.addEventListener("click", function(e) {
+    that.click = getXandY(e);
+    // stop event from propagating to DOM parents
+    e.stopPropagation();
+    // prevents action from the browser (eg. tick a checkbox)
+    e.preventDefault();
+  });
+    
+  this.context.canvas.addEventListener("mousemove", function(e) {
+    that.mouse = getXandY(e);
+  });
 
   var that = this;
   (function gameLoop() {
@@ -165,6 +192,7 @@ Engine.prototype.tick = function() {
 
 Engine.prototype.update = function() {
   // FIXME: check that the layers are processed in order
+  // loop through all entities, call update();
   var node = null;
   for each (var l in this.world.layers) {
     node = l.head;
@@ -233,6 +261,20 @@ Engine.prototype.draw = function() {
   this.context.clearRect(0, 0, this.width, this.height);
 
   // FIXME: check that the layers are processed in order
+  // loop here through all entities, call draw()
+
+  // TODO: replace with quad scaling later
+  this.context.mozImageSmoothingEnabled = false;
+  for(var x = 0; x < 8; ++x) {
+    for(var y = 0; y < 8; ++y) {
+      this.context.drawImage(this.images['grass'], x*80, y*60, 80, 60);
+    }
+  }
+  this.context.drawImage(this.images['cannon'], 80*2, 60, 80, 60);
+  this.context.drawImage(this.images['paintball'], 80*4, 60, 80, 60);
+  var v = Math.floor(this.time*10 % 3);
+  this.context.drawImage(this.images['sprinkle'+v], 80*4, 60*3, 80, 60);
+
   var node = null;
   var ndraw = 0;
   for each (var l in this.world.layers) {
