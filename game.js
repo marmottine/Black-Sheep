@@ -114,8 +114,8 @@ Engine.prototype.load_progress = function(loaded, total, callback) {
 
 Engine.prototype.getXY = function(e) {
   // return coordinates relative to game
-  var x = e.clientX - this.context.canvas.getBoundingClientRect().left - this.offset.x;
-  var y = e.clientY - this.context.canvas.getBoundingClientRect().top - this.offset.y;
+  var x = (e.clientX - this.context.canvas.getBoundingClientRect().left) / this.scale - this.offset.x;
+  var y = (e.clientY - this.context.canvas.getBoundingClientRect().top) / this.scale - this.offset.y;
   return {x: x, y: y};
 }
 
@@ -237,11 +237,13 @@ Engine.prototype.draw = function() {
     this.element.width = this.height * canvas_ratio;
     this.element.height = this.height;
     this.offset.x = (this.element.width - this.width)/2;
+    this.scale = this.canvas_height / this.height;
   } else {
     // too tall
     this.element.width = this.width;
     this.element.height = this.width / canvas_ratio;
     this.offset.y = (this.element.height - this.height)/2;
+    this.scale = this.canvas_width / this.width;
   }
 
   this.context.save();
