@@ -40,8 +40,6 @@ function Engine() {
   this.fps = 0;
   this.fps_stats = new Array(60);
 
-  this.show_outlines = true;
-
   this.world = {
     types: {},
     layers: {}
