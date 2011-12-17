@@ -9,7 +9,7 @@ window.onload = function() {
 
   var image_list = ['grass', 'cannon', 'paintball',
                     'sprinkle0', 'sprinkle1', 'sprinkle2',
-                    'sheep1', 'sheep2', 'sheep3', 'sheep4',
+                    'sheep1-1', 'sheep1-2', 'sheep1-3', 'sheep1-4',
                     'fence3'];
   var sound_list = ['baa0', 'baa1', 'baa2'];
   game = new BlackSheep();
@@ -70,10 +70,10 @@ BlackSheep.prototype.draw = function() {
 function Sheep(game, lane) {
   Entity.call(this, game);
   this.speed = 2;
-  this.animation = new Animation(game, [this.game.images['sheep1'],
-                                        this.game.images['sheep2'],
-                                        this.game.images['sheep3'],
-                                        this.game.images['sheep4'] ], 1, true);
+  this.animation = new Animation(game, [this.game.images['sheep1-1'],
+                                        this.game.images['sheep1-2'],
+                                        this.game.images['sheep1-3'],
+                                        this.game.images['sheep1-4'] ], 0.1, true);
   this.lane = lane;
   this.x = game.width*0.9;
   this.y = lane*60 + 30;
