@@ -1,0 +1,46 @@
+html,body,div,ul,li,p {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+background: #000;
+  color: #333;
+  font: 14px "Trebuchet MS","Lucida Grande",Verdana,Arial,Helvetica,sans-serif;
+  text-align: justify;
+  line-height: 1.45em;
+}
+
+a {
+  outline: 0;
+  color: #333;
+  border-bottom: 1px dotted #08B;
+  text-decoration: none;
+}
+
+canvas {
+  outline: 0;
+}
+
+#wrap {
+  position: relative;
+  margin: 0 auto;
+  padding: 2em 0 3em 0;
+  width: 54em;
+}
+
+#body {
+  -moz-border-radius: 2em;
+  -webkit-border-radius: 2em;
+  border-radius: 2em;
+  background: #ffffff;
+  padding: 2em 2em 4em 2em;
+}
+
+#body p {
+  padding: 0 1em 1em 1em;
+}
+
+#game {
+  text-align:center;
+}
