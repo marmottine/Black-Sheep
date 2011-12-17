@@ -40,6 +40,8 @@ function Engine() {
   this.fps = 0;
   this.fps_stats = new Array(60);
 
+  this.show_outlines = true;
+
   this.world = {
     types: {},
     layers: {}
@@ -264,7 +266,6 @@ Engine.prototype.draw = function() {
   // loop here through all entities, call draw()
 
   // TODO: replace with quad scaling later
-  this.context.mozImageSmoothingEnabled = false;
   for(var x = 0; x < 8; ++x) {
     for(var y = 0; y < 8; ++y) {
       this.context.drawImage(this.images['grass'], x*80, y*60, 80, 60);
@@ -492,13 +493,13 @@ Entity.prototype.update = function() {
   }
 }
 
-Entity.prototype.draw = function(ctx) {
-  if (this.game.showOutlines && this.radius) {
-    ctx.beginPath();
-    ctx.strokeStyle = "green";
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2, false);
-    ctx.stroke();
-    ctx.closePath();
+Entity.prototype.draw = function() {
+  if (this.game.show_outlines && this.width) {
+    this.game.context.beginPath();
+    this.game.context.strokeStyle = "red";
+    this.game.context.arc(this.x, this.y, this.width/Math.PI, 0, Math.PI*2, false);
+    this.game.context.stroke();
+    this.game.context.closePath();
   }
 }
 
