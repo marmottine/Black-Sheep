@@ -136,14 +136,12 @@ function Cannon(game, lane, x) {
 Cannon.prototype = new Entity();
 Cannon.prototype.constructor = Cannon;
 
-Cannon.prototype.saveState = function() {
-  this.lastX = this.x;
-  this.lastY = this.y;
-}
-
-Cannon.prototype.restoreState = function() {
-  this.x = this.lastX;
-  this.y = this.lastY;
+Cannon.prototype.mouseUp = function(coord) {
+  this.x = coord.x;
+  // this entity sticks to either lane
+  this.lane = Math.floor(coord.y / 60);
+  this.y = this.lane*60 + 30;
+  console.log(coord.y + ' ' + coord.y/60 + ' ' + this.lane + ' ' + this.y);
 }
 
 Cannon.prototype.update = function() {

@@ -626,6 +626,7 @@ Entity.prototype.checkMouseInputs = function() {
       if (this.dragged) {
         this.dragged = false;
         this.game.draggedEntity = null;
+        this.mouseUp({x:event.x, y:event.y});
         this.saveState();
       }
     }
@@ -640,6 +641,19 @@ Entity.prototype.checkMouseInputs = function() {
   for (var i = 0 ; i < eventsToBeRemoved.length ; i++) {
     this.game.inputEvents.splice(i);
   }
+}
+
+Entity.prototype.saveState = function() {
+  this.lastX = this.x;
+  this.lastY = this.y;
+}
+
+Entity.prototype.restoreState = function() {
+  this.x = this.lastX;
+  this.y = this.lastY;
+}
+
+Entity.prototype.mouseUp = function(coord) {
 }
 
 /*
