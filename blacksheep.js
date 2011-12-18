@@ -46,7 +46,7 @@ BlackSheep.prototype.start = function() {
 
   var cannon = new Cannon(this, 3, 180);
   this.addEntity(cannon, "cannon", 2);
-  var cannon = new Cannon(this, 1, 300);
+  cannon = new Cannon(this, 1, 300);
   this.addEntity(cannon, "cannon", 2);
 
   Engine.prototype.start.call(this);
@@ -144,6 +144,8 @@ function Cannon(game, lane, x) {
   this.height = 60;
   this.radius = 40;
   this.dragged = false;
+//  Entity.prototype.registerAsMouseMoveListener.call(this);
+  this.registerAsMouseMoveListener();
 }
 
 Cannon.prototype = new Entity();
@@ -160,7 +162,17 @@ Cannon.prototype.restoreState = function() {
 }
 
 Cannon.prototype.update = function() {
+  // Entity.prototype.checkMouseInputs(this);
+  this.checkMouseInputs();
+  Entity.prototype.update.call(this);
+}
 
+Cannon.prototype.draw = function(ctx) {
+  this.drawSpriteCentered(ctx);
+  Entity.prototype.draw.call(this, ctx);
+}
+
+Cannon.prototype.registerAsMouseMoveListener = function() {
   var that = this;
   var mouseMove = function(e) {
     if (that.dragged) {
@@ -168,8 +180,10 @@ Cannon.prototype.update = function() {
       that.y = (e.pageY - that.game.context.canvas.offsetTop) / that.game.scale - that.game.offset.y;
     }
   }
+  this.game.context.canvas.addEventListener('mousemove', mouseMove);
+}
 
-  // check inputs
+Cannon.prototype.checkMouseInputs = function() {
   var eventsToBeRemoved = [];
   for (var i = 0 ; i < this.game.inputEvents.length ; i++) {
     var event = this.game.inputEvents[i];
@@ -180,8 +194,6 @@ Cannon.prototype.update = function() {
         event.y > this.y - this.height/2 &&
         event.y < this.y + this.height/2) {
       console.log('cannon dragged on');
-      // FIXME: add only once!
-      this.game.context.canvas.addEventListener('mousemove', mouseMove);
       this.saveState();
       this.dragged = true;
       eventsToBeRemoved.push(i);
@@ -189,7 +201,6 @@ Cannon.prototype.update = function() {
     else if (event.event == "mup") {
       if (this.dragged) {
         console.log('cannon dragged off');
-        this.game.context.canvas.removeEventListener('mousemove', mouseMove);
         this.dragged = false;
         this.saveState();
       }
@@ -197,7 +208,6 @@ Cannon.prototype.update = function() {
     else if (event.event == "mout") {
       if (this.dragged) {
         console.log('out');
-        this.game.context.canvas.removeEventListener('mousemove', mouseMove);
         this.restoreState();
         this.dragged = false;
       }
@@ -206,11 +216,5 @@ Cannon.prototype.update = function() {
   for (var i = 0 ; i < eventsToBeRemoved.length ; i++) {
     this.game.inputEvents.splice(i);
   }
-
-  Entity.prototype.update.call(this);
 }
 
-Cannon.prototype.draw = function(ctx) {
-  this.drawSpriteCentered(ctx);
-  Entity.prototype.draw.call(this, ctx);
-}

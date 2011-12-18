@@ -565,6 +565,7 @@ Entity.prototype.outsideScreen = function() {
           this.y + this.height/2 < 0 );
 }
 
+
 /*
 Entity.prototype.rotateAndCache = function(image, angle) {
   var offscreenCanvas = document.createElement('canvas');
