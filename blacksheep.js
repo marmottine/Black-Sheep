@@ -135,7 +135,7 @@ Fence.prototype.draw = function(ctx) {
 //-----------------------------------------------------
 
 function Cannon(game, lane, x) {
-  Entity.call(this, game);
+  Entity.call(this, game, true);
   this.sprite = game.images['cannon'];
   this.lane = lane;
   this.x = x;
@@ -143,9 +143,6 @@ function Cannon(game, lane, x) {
   this.width = 80;
   this.height = 60;
   this.radius = 40;
-  this.dragged = false;
-//  Entity.prototype.registerAsMouseMoveListener.call(this);
-  this.registerAsMouseMoveListener();
 }
 
 Cannon.prototype = new Entity();
@@ -162,8 +159,6 @@ Cannon.prototype.restoreState = function() {
 }
 
 Cannon.prototype.update = function() {
-  // Entity.prototype.checkMouseInputs(this);
-  this.checkMouseInputs();
   Entity.prototype.update.call(this);
 }
 
@@ -171,50 +166,3 @@ Cannon.prototype.draw = function(ctx) {
   this.drawSpriteCentered(ctx);
   Entity.prototype.draw.call(this, ctx);
 }
-
-Cannon.prototype.registerAsMouseMoveListener = function() {
-  var that = this;
-  var mouseMove = function(e) {
-    if (that.dragged) {
-      that.x = (e.pageX - that.game.context.canvas.offsetLeft) / that.game.scale - that.game.offset.x;
-      that.y = (e.pageY - that.game.context.canvas.offsetTop) / that.game.scale - that.game.offset.y;
-    }
-  }
-  this.game.context.canvas.addEventListener('mousemove', mouseMove);
-}
-
-Cannon.prototype.checkMouseInputs = function() {
-  var eventsToBeRemoved = [];
-  for (var i = 0 ; i < this.game.inputEvents.length ; i++) {
-    var event = this.game.inputEvents[i];
-    if (this.dragged == false &&
-        event.event == "mdown" &&
-        event.x > this.x - this.width/2 &&
-        event.x < this.x + this.width/2 &&
-        event.y > this.y - this.height/2 &&
-        event.y < this.y + this.height/2) {
-      console.log('cannon dragged on');
-      this.saveState();
-      this.dragged = true;
-      eventsToBeRemoved.push(i);
-    }
-    else if (event.event == "mup") {
-      if (this.dragged) {
-        console.log('cannon dragged off');
-        this.dragged = false;
-        this.saveState();
-      }
-    }
-    else if (event.event == "mout") {
-      if (this.dragged) {
-        console.log('out');
-        this.restoreState();
-        this.dragged = false;
-      }
-    }
-  }
-  for (var i = 0 ; i < eventsToBeRemoved.length ; i++) {
-    this.game.inputEvents.splice(i);
-  }
-}
-

@@ -525,17 +525,21 @@ Engine.prototype.setEntityLayer = function(node, layer) {
 // Entity
 //-----------------------------------------------------
 
-function Entity(game, x, y, w, h) {
+function Entity(game, draggable) {
   this.game = game;
-  this.x = x;
-  this.y = y;
-  this.width = w;
-  this.height = h;
   this.toberemoved = false;
+  this.dragged = false;
+  this.draggable = draggable || false;
+  if (this.draggable) {
+    Entity.prototype.registerAsMouseMoveListener.call(this);
+  }
 }
 
 Entity.prototype.update = function() {
- if (this.outsideScreen()) {
+  if (this.draggable) {
+    Entity.prototype.checkMouseInputs.call(this);
+  }
+  if (this.outsideScreen()) {
     this.toberemoved = true;
   }
 }
@@ -565,6 +569,48 @@ Entity.prototype.outsideScreen = function() {
           this.y + this.height/2 < 0 );
 }
 
+Entity.prototype.registerAsMouseMoveListener = function() {
+  var that = this;
+  var mouseMove = function(e) {
+    if (that.dragged) {
+      that.x = (e.pageX - that.game.context.canvas.offsetLeft) / that.game.scale - that.game.offset.x;
+      that.y = (e.pageY - that.game.context.canvas.offsetTop) / that.game.scale - that.game.offset.y;
+    }
+  }
+  this.game.context.canvas.addEventListener('mousemove', mouseMove);
+}
+
+Entity.prototype.checkMouseInputs = function() {
+  var eventsToBeRemoved = [];
+  for (var i = 0 ; i < this.game.inputEvents.length ; i++) {
+    var event = this.game.inputEvents[i];
+    if (this.dragged == false &&
+        event.event == "mdown" &&
+        event.x > this.x - this.width/2 &&
+        event.x < this.x + this.width/2 &&
+        event.y > this.y - this.height/2 &&
+        event.y < this.y + this.height/2) {
+      this.saveState();
+      this.dragged = true;
+      eventsToBeRemoved.push(i);
+    }
+    else if (event.event == "mup") {
+      if (this.dragged) {
+        this.dragged = false;
+        this.saveState();
+      }
+    }
+    else if (event.event == "mout") {
+      if (this.dragged) {
+        this.restoreState();
+        this.dragged = false;
+      }
+    }
+  }
+  for (var i = 0 ; i < eventsToBeRemoved.length ; i++) {
+    this.game.inputEvents.splice(i);
+  }
+}
 
 /*
 Entity.prototype.rotateAndCache = function(image, angle) {
