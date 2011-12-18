@@ -42,7 +42,7 @@ function Engine() {
 
   this.world = {
     types: {},
-    layers: {}
+    layers: []
   }
   
   this.canvas_width = null;
@@ -242,11 +242,12 @@ Engine.prototype.tick = function() {
 }
 
 Engine.prototype.update = function() {
-  // FIXME: check that the layers are processed in order
   // loop through all entities, call update();
-  var node = null;
-  for each (var l in this.world.layers) {
-    node = l.head;
+  for (var i = 0 ; i < this.world.layers.length ; i++) {
+    if (! this.world.layers[i]) {
+      continue;
+    }
+    node = this.world.layers[i].head;
     if (node == null) {
       continue;
     }
@@ -334,9 +335,6 @@ Engine.prototype.draw = function() {
   this.context.clip();
   this.context.clearRect(0, 0, this.width, this.height);
 
-  // FIXME: check that the layers are processed in order
-  // loop here through all entities, call draw()
-
   // TODO: replace with quad scaling later
   for(var x = 0; x < 8; ++x) {
     for(var y = 0; y < 8; ++y) {
@@ -348,19 +346,20 @@ Engine.prototype.draw = function() {
   var v = Math.floor(this.time*10 % 3);
   this.context.drawImage(this.images['sprinkle'+v], 80*4, 60*3, 80, 60);
 
+  // loop here through all entities, call draw()
   var node = null;
-  var ndraw = 0;
-  for each (var l in this.world.layers) {
-    node = l.head;
+  for (var i = 0 ; i < this.world.layers.length ; i++) {
+    if (! this.world.layers[i]) {
+      continue;
+    }
+    node = this.world.layers[i].head;
     if (node == null) {
       continue;
     }
     node.entity.draw(this.context);
-    ndraw ++;
     while (node.Lnext !== null) {
       node = node.Lnext;
       node.entity.draw(this.context);
-      ndraw ++;
     }
   }
 
@@ -394,6 +393,9 @@ Engine.prototype.createLayer = function (layer) {
   }
   else {
     this.world.layers[layer] = {head: null, tail: null};
+    //console.log("before sort: "); for (l in this.world.layers) {console.log(l);}
+    //this.world.layers.sort();
+    //console.log("after sort: "); for (l in this.world.layers) {console.log(l);}
   }
 };
 
@@ -408,7 +410,7 @@ Engine.prototype.addEntity = function(entity, type, layer) {
 
   // "push front" into the right type list
   if (type in this.world.types) {
-    Tlist = this.world.types[type];
+    var Tlist = this.world.types[type];
     if (Tlist.head === null) {
       Tlist.head = node;
       Tlist.tail = node;
@@ -418,26 +420,24 @@ Engine.prototype.addEntity = function(entity, type, layer) {
       Tlist.head.Tprev = node;
       Tlist.head = node;
     }
-  }    
+  }
   else {
     console.log("warning: type does not exist " + type);
   }
 
   // "push front" into the right layer list
-  if (layer in this.world.layers) {
-    Llist = this.world.layers[layer];
-    if (Llist.head === null) {
-      Llist.head = node;
-      Llist.tail = node;
-    }
-    else {
-      node.Lnext = Llist.head;
-      Llist.head.Lprev = node;
-      Llist.head = node;
-    }
+  if (! (layer in this.world.layers)) {
+    this.createLayer(layer);
+  }
+  var Llist = this.world.layers[layer];
+  if (Llist.head === null) {
+    Llist.head = node;
+    Llist.tail = node;
   }
   else {
-    console.log("warning: layer does not exist " + layer);
+    node.Lnext = Llist.head;
+    Llist.head.Lprev = node;
+    Llist.head = node;
   }
 };
 
@@ -528,20 +528,18 @@ Engine.prototype.setEntityLayer = function(node, layer) {
   }
 
   // "push front" into the new layer list
-  if (layer in w.layers) {
-    Llist = w.layers[layer];
-    if (Llist.head === null) {
-      Llist.head = node;
-      Llist.tail = node;
-    }
-    else {
-      node.Lnext = Llist.head;
-      Llist.head.Lprev = node;
-      Llist.head = node;
-    }
+  if (! (layer in this.world.layers)) {
+    this.createLayer(layer);
+  }
+  var Llist = w.layers[layer];
+  if (Llist.head === null) {
+    Llist.head = node;
+    Llist.tail = node;
   }
   else {
-    console.log("warning: layer does not exist " + layer);
+    node.Lnext = Llist.head;
+    Llist.head.Lprev = node;
+    Llist.head = node;
   }
 }
 

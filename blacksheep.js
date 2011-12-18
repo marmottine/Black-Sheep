@@ -32,34 +32,22 @@ BlackSheep.prototype.start = function() {
   this.createType("sheep");
   this.createType("fence");
   this.createType("cannon");
-  this.createLayer(2);
-  this.createLayer(1);
 
   var fence;
   for (var i = 0 ; i < 8 ; i++) {
     fence = new Fence(this, i);
-    this.addEntity(fence, "fence", 1);
+    this.addEntity(fence, "fence", 10*(i+1));
   }
 
   var sheep = new Sheep(this, 2);
-  this.addEntity(sheep, "sheep", 2);
+  this.addEntity(sheep, "sheep",35);
 
   var cannon = new Cannon(this, 3, 180);
-  this.addEntity(cannon, "cannon", 2);
+  this.addEntity(cannon, "cannon", 42);
   cannon = new Cannon(this, 1, 300);
-  this.addEntity(cannon, "cannon", 2);
+  this.addEntity(cannon, "cannon", 22);
 
   Engine.prototype.start.call(this);
-
-  var that = this;
-  this.context.canvas.addEventListener('mousedown', function(e) {
-    var coord = that.getXY(e);
-    console.log("mousedown " + coord.x + " " + coord.y);
-  });
-
-  this.context.canvas.onmouseup = function() {
-    console.log("mouseup");
-  }
 }
 
 BlackSheep.prototype.update = function() {
