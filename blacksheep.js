@@ -43,9 +43,12 @@ BlackSheep.prototype.start = function() {
   this.addEntity(sheep, "sheep",35);
 
   var cannon = new Cannon(this, 3, 180);
+  // 42 == 10*(cannon.lane+1) + aLittleSomething // cf fences
   this.addEntity(cannon, "cannon", 42);
   cannon = new Cannon(this, 1, 300);
   this.addEntity(cannon, "cannon", 22);
+  cannon = new Cannon(this, 4, 330);
+  this.addEntity(cannon, "cannon", 52);
 
   Engine.prototype.start.call(this);
 }
@@ -129,7 +132,9 @@ function Cannon(game, lane, x) {
   this.x = x;
   this.y = lane*60 + 30;
   this.width = 80;
-  this.height = 60;
+  // Hack: so long the fixme in Entity.prototype.mouseUp is not fixed,
+  // it may be necessary to reduce the height of sticksToLanes entities
+  this.height = 50; //60;
   this.radius = 40;
 }
 

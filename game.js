@@ -674,6 +674,10 @@ Entity.prototype.mouseUp = function(event) {
   if (this.dragged) {
     if (this.hasExclusivePlace) {
       // this entity cannot overlap some other entities
+      // FIXME: could be improved in 2 ways:
+      // 1) if this.sticksOnLanes, use the final this.y (in the middle of the lane)
+      // 2) if the overlapping area is small, try to move the entity slightly
+      // in a way that entities don't overlap anymore
       var that = this;
       var overlap = this.game.exclusivePlaceEntities.some(function(elem) {
         return that !== elem && that.overlap(elem);
