@@ -52,6 +52,7 @@ function Engine() {
   this.draggedEntity = null;
   this.draggableEntities = [];
   this.mouse = {x: -3, y: -3};
+  this.exclusivePlaceEntities = [];
 }
 
 Engine.prototype.init = function(element, width, height, image_list, sound_list, callback) {
@@ -547,7 +548,7 @@ Engine.prototype.setEntityLayer = function(node, layer) {
 // Entity
 //-----------------------------------------------------
 
-function Entity(game, draggable) {
+function Entity(game, draggable, hasExclusivePlace, sticksToLanes) {
   this.game = game;
   this.toberemoved = false;
   this.dragged = false;
@@ -556,6 +557,11 @@ function Entity(game, draggable) {
     this.registerAsMouseMoveListener.call(this);
     this.game.draggableEntities.push(this);
   }
+  this.hasExclusivePlace = hasExclusivePlace || false;
+  if (this.hasExclusivePlace) {
+    this.game.exclusivePlaceEntities.push(this);
+  }
+  this.sticksToLanes = sticksToLanes || false;
 }
 
 Entity.prototype.update = function() {
@@ -593,10 +599,21 @@ Entity.prototype.outsideScreen = function() {
 }
 
 Entity.prototype.onMe = function(coord) {
-  return (coord.x > this.x - this.width/2 &&
-          coord.x < this.x + this.width/2 &&
-          coord.y > this.y - this.height/2 &&
-          coord.y < this.y + this.height/2);
+  return (coord.x >= this.x - this.width/2 &&
+          coord.x <= this.x + this.width/2 &&
+          coord.y >= this.y - this.height/2 &&
+          coord.y <= this.y + this.height/2);
+}
+
+Entity.prototype.overlap = function(box) {
+  var bleft = box.x - box.width/2;
+  var bright = box.x + box.width/2;
+  var btop = box.y - box.height/2;
+  var bbottom = box.y + box.height/2;
+  return (this.onMe({x:bleft ,y:btop}) ||
+          this.onMe({x:bleft ,y:bbottom}) ||
+          this.onMe({x:bright ,y:btop}) ||
+          this.onMe({x:bright ,y:bbottom}));
 }
 
 Entity.prototype.registerAsMouseMoveListener = function() {
@@ -612,30 +629,21 @@ Entity.prototype.registerAsMouseMoveListener = function() {
 
 Entity.prototype.checkMouseInputs = function() {
   var eventsToBeRemoved = [];
+  var remove;
   for (var i = 0 ; i < this.game.inputEvents.length ; i++) {
     var event = this.game.inputEvents[i];
-    if (this.dragged == false &&
-        event.event == "mdown" &&
-        this.onMe(event)) {
-      this.saveState();
-      this.dragged = true;
-      this.game.draggedEntity = this;
-      eventsToBeRemoved.push(i);
+    remove = false;
+    if (event.event == "mdown") {
+      remove = this.mouseDown(event);
     }
     else if (event.event == "mup") {
-      if (this.dragged) {
-        this.dragged = false;
-        this.game.draggedEntity = null;
-        this.mouseUp({x:event.x, y:event.y});
-        this.saveState();
-      }
+      remove = this.mouseUp(event);
     }
     else if (event.event == "mout") {
-      if (this.dragged) {
-        this.restoreState();
-        this.dragged = false;
-        this.game.draggedEntity = null;
-      }
+      remove = this.mouseOut(event);
+    }
+    if (remove) {
+      eventsToBeRemoved.push(i);
     }
   }
   for (var i = 0 ; i < eventsToBeRemoved.length ; i++) {
@@ -653,7 +661,52 @@ Entity.prototype.restoreState = function() {
   this.y = this.lastY;
 }
 
-Entity.prototype.mouseUp = function(coord) {
+Entity.prototype.mouseDown = function(event) {
+  if (this.dragged == false && this.onMe(event)) {
+    this.saveState();
+    this.dragged = true;
+    this.game.draggedEntity = this;
+    return true;
+  }
+}
+
+Entity.prototype.mouseUp = function(event) {
+  if (this.dragged) {
+    if (this.hasExclusivePlace) {
+      // this entity cannot overlap some other entities
+      var that = this;
+      var overlap = this.game.exclusivePlaceEntities.some(function(elem) {
+        return that !== elem && that.overlap(elem);
+      });
+      if (overlap) {
+        // cancel move
+        this.restoreState();
+        this.dragged = false;
+        this.game.draggedEntity = null;
+        return false;
+      }
+    }
+    this.x = event.x;
+    this.y = event.y;
+    if (this.sticksToLanes) {
+      // this entity sticks to either lane
+      this.lane = Math.floor(event.y / 60);
+      this.y = this.lane*60 + 30;
+    }
+    this.dragged = false;
+    this.game.draggedEntity = null;
+    this.saveState();
+  }
+  return false;
+}
+
+Entity.prototype.mouseOut = function(event) {
+  if (this.dragged) {
+    this.restoreState();
+    this.dragged = false;
+    this.game.draggedEntity = null;
+  }
+  return false;
 }
 
 /*

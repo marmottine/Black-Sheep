@@ -63,7 +63,7 @@ BlackSheep.prototype.draw = function() {
 //-----------------------------------------------------
 
 function Sheep(game, lane) {
-  Entity.call(this, game);
+  Entity.call(this, game, false, false);
   this.speed = 2;
   this.animation = new Animation(game, [this.game.images['sheep1-1'],
                                         this.game.images['sheep1-2'],
@@ -96,7 +96,7 @@ Sheep.prototype.draw = function(ctx) {
 //-----------------------------------------------------
 
 function Fence(game, lane) {
-  Entity.call(this, game);
+  Entity.call(this, game, false, true);
   this.sprite = game.images['fence3'];
   this.lane = lane;
   this.x = 100;
@@ -123,7 +123,7 @@ Fence.prototype.draw = function(ctx) {
 //-----------------------------------------------------
 
 function Cannon(game, lane, x) {
-  Entity.call(this, game, true);
+  Entity.call(this, game, true, true, true);
   this.sprite = game.images['cannon'];
   this.lane = lane;
   this.x = x;
@@ -135,14 +135,6 @@ function Cannon(game, lane, x) {
 
 Cannon.prototype = new Entity();
 Cannon.prototype.constructor = Cannon;
-
-Cannon.prototype.mouseUp = function(coord) {
-  this.x = coord.x;
-  // this entity sticks to either lane
-  this.lane = Math.floor(coord.y / 60);
-  this.y = this.lane*60 + 30;
-  console.log(coord.y + ' ' + coord.y/60 + ' ' + this.lane + ' ' + this.y);
-}
 
 Cannon.prototype.update = function() {
   Entity.prototype.update.call(this);
