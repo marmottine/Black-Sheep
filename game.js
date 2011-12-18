@@ -49,6 +49,9 @@ function Engine() {
   this.canvas_height = null;
 
   this.inputEvents = [];
+  this.draggedEntity = null;
+  this.draggableEntities = [];
+  this.mouse = {x: -3, y: -3};
 }
 
 Engine.prototype.init = function(element, width, height, image_list, sound_list, callback) {
@@ -111,6 +114,7 @@ Engine.prototype.init = function(element, width, height, image_list, sound_list,
   this.context.canvas.addEventListener('mousedown', this.mouseDown.bind(this));
   this.context.canvas.addEventListener('mouseup', this.mouseUp.bind(this));
   this.context.canvas.addEventListener('mouseout', this.mouseOut.bind(this));
+  this.context.canvas.addEventListener('mousemove', this.mouseMove.bind(this));
 }
 
 Engine.prototype.mouseDown = function(e) {
@@ -145,9 +149,14 @@ Engine.prototype.mouseUp = function(e) {
 }
 
 Engine.prototype.mouseOut = function(e) {
-    this.inputEvents.push({event:"mout",
-                       x: -2,
-                       y: -2});
+  this.inputEvents.push({event:"mout",
+                         x: -2,
+                         y: -2});
+}
+
+Engine.prototype.mouseMove = function(e) {
+  this.mouse = {x: (e.pageX - this.context.canvas.offsetLeft) / this.scale - this.offset.x,
+                y: (e.pageY - this.context.canvas.offsetTop) / this.scale - this.offset.y};
 }
 
 Engine.prototype.load_progress = function(loaded, total, callback) {
@@ -266,6 +275,21 @@ Engine.prototype.update = function() {
       }
     }
   }
+
+  // cursor shape
+  var cursor = "auto"; // "default"
+  if (this.draggedEntity) {
+    cursor = "move";
+  }
+  else {
+    for each (entity in this.draggableEntities) {
+      if (entity.onMe(this.mouse)) {
+        cursor = "pointer";
+        break;
+      }
+    }
+  }
+  document.body.style.cursor = cursor;
 }
 
 Engine.prototype.draw = function() {
@@ -531,13 +555,14 @@ function Entity(game, draggable) {
   this.dragged = false;
   this.draggable = draggable || false;
   if (this.draggable) {
-    Entity.prototype.registerAsMouseMoveListener.call(this);
+    this.registerAsMouseMoveListener.call(this);
+    this.game.draggableEntities.push(this);
   }
 }
 
 Entity.prototype.update = function() {
   if (this.draggable) {
-    Entity.prototype.checkMouseInputs.call(this);
+    this.checkMouseInputs.call(this);
   }
   if (this.outsideScreen()) {
     this.toberemoved = true;
@@ -569,6 +594,13 @@ Entity.prototype.outsideScreen = function() {
           this.y + this.height/2 < 0 );
 }
 
+Entity.prototype.onMe = function(coord) {
+  return (coord.x > this.x - this.width/2 &&
+          coord.x < this.x + this.width/2 &&
+          coord.y > this.y - this.height/2 &&
+          coord.y < this.y + this.height/2);
+}
+
 Entity.prototype.registerAsMouseMoveListener = function() {
   var that = this;
   var mouseMove = function(e) {
@@ -586,17 +618,16 @@ Entity.prototype.checkMouseInputs = function() {
     var event = this.game.inputEvents[i];
     if (this.dragged == false &&
         event.event == "mdown" &&
-        event.x > this.x - this.width/2 &&
-        event.x < this.x + this.width/2 &&
-        event.y > this.y - this.height/2 &&
-        event.y < this.y + this.height/2) {
+        this.onMe(event)) {
       this.saveState();
       this.dragged = true;
+      this.game.draggedEntity = this;
       eventsToBeRemoved.push(i);
     }
     else if (event.event == "mup") {
       if (this.dragged) {
         this.dragged = false;
+        this.game.draggedEntity = null;
         this.saveState();
       }
     }
@@ -604,6 +635,7 @@ Entity.prototype.checkMouseInputs = function() {
       if (this.dragged) {
         this.restoreState();
         this.dragged = false;
+        this.game.draggedEntity = null;
       }
     }
   }
