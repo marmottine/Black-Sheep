@@ -164,8 +164,8 @@ Cannon.prototype.update = function() {
   var that = this;
   var mouseMove = function(e) {
     if (that.dragged) {
-      that.x = e.pageX - that.game.context.canvas.offsetLeft;
-      that.y = e.pageY - that.game.context.canvas.offsetTop;
+      that.x = (e.pageX - that.game.context.canvas.offsetLeft) / that.game.scale - that.game.offset.x;
+      that.y = (e.pageY - that.game.context.canvas.offsetTop) / that.game.scale - that.game.offset.y;
     }
   }
 

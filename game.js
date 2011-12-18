@@ -122,8 +122,8 @@ Engine.prototype.mouseDown = function(e) {
       e.pageY < this.context.canvas.offsetTop + this.context.canvas.height) {
       console.log("add event");
     this.inputEvents.push({event:"mdown",
-                       x: e.pageX - this.context.canvas.offsetLeft,
-                       y: e.pageY - this.context.canvas.offsetTop});
+                       x: (e.pageX - this.context.canvas.offsetLeft) / this.scale - this.offset.x,
+                       y: (e.pageY - this.context.canvas.offsetTop) / this.scale - this.offset.y});
   }
 }
 
@@ -133,8 +133,8 @@ Engine.prototype.mouseUp = function(e) {
       e.pageY > this.context.canvas.offsetTop &&
       e.pageY < this.context.canvas.offsetTop + this.height) {
     this.inputEvents.push({event:"mup",
-                       x: e.pageX - this.context.canvas.offsetLeft,
-                       y: e.pageY - this.context.canvas.offsetTop});
+                       x: (e.pageX - this.context.canvas.offsetLeft) / this.scale - this.offset.x,
+                       y: (e.pageY - this.context.canvas.offsetTop) / this.scale - this.offset.y});
   }
   else {
     console.log("mouse up outside canvas");
