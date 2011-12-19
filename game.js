@@ -228,6 +228,14 @@ Engine.prototype.tick = function() {
   this.last_timestamp = timestamp;
   this.delta = Math.min(walldelta / 1000, this.max_step);
   this.time += this.delta;
+
+  // active wait if too much fps
+  /*
+  for (i = 0 ; i < 10000 ; i++) {
+    this.sleep += i*i*this.sleep*(i-1);
+  }
+  */
+
   if (this.show_fps) {
     this.fps = 0;
     var i;
@@ -394,9 +402,6 @@ Engine.prototype.createLayer = function (layer) {
   }
   else {
     this.world.layers[layer] = {head: null, tail: null};
-    //console.log("before sort: "); for (l in this.world.layers) {console.log(l);}
-    //this.world.layers.sort();
-    //console.log("after sort: "); for (l in this.world.layers) {console.log(l);}
   }
 };
 
@@ -606,14 +611,13 @@ Entity.prototype.onMe = function(coord) {
 }
 
 Entity.prototype.overlap = function(box) {
-  var bleft = box.x - box.width/2;
-  var bright = box.x + box.width/2;
-  var btop = box.y - box.height/2;
-  var bbottom = box.y + box.height/2;
-  return (this.onMe({x:bleft ,y:btop}) ||
-          this.onMe({x:bleft ,y:bbottom}) ||
-          this.onMe({x:bright ,y:btop}) ||
-          this.onMe({x:bright ,y:bbottom}));
+  function segmentOverlap(s1, s2) {
+    return (s1.x1 <= s2.x1 && s2.x1 <= s1.x2) || (s2.x1 <= s1.x1 && s1.x1 <= s2.x2);
+  }
+  return (segmentOverlap({x1: this.x - this.width/2, x2: this.x + this.width/2},
+                         {x1: box.x - box.width/2, x2: box.x + box.width/2}) &&
+          segmentOverlap({x1: this.y - this.height/2, x2: this.y + this.height/2},
+                         {x1: box.y - box.height/2, x2: box.y + box.height/2}));
 }
 
 Entity.prototype.registerAsMouseMoveListener = function() {
@@ -672,6 +676,8 @@ Entity.prototype.mouseDown = function(event) {
 
 Entity.prototype.mouseUp = function(event) {
   if (this.dragged) {
+    this.x = event.x;
+    this.y = event.y;
     if (this.hasExclusivePlace) {
       // this entity cannot overlap some other entities
       // FIXME: could be improved in 2 ways:
@@ -690,8 +696,6 @@ Entity.prototype.mouseUp = function(event) {
         return false;
       }
     }
-    this.x = event.x;
-    this.y = event.y;
     if (this.sticksToLanes) {
       // this entity sticks to either lane
       this.lane = Math.floor(event.y / 60);

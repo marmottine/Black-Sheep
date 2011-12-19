@@ -10,7 +10,7 @@ window.onload = function() {
   var image_list = ['grass', 'cannon', 'paintball',
                     'sprinkle0', 'sprinkle1', 'sprinkle2',
                     'sheep1-1', 'sheep1-2', 'sheep1-3', 'sheep1-4',
-                    'fence3'];
+                    'fence3', 'puddle2'];
   var sound_list = ['baa0', 'baa1', 'baa2'];
   game = new BlackSheep();
   game.init(element, 640, 480, image_list, sound_list,
@@ -32,6 +32,7 @@ BlackSheep.prototype.start = function() {
   this.createType("sheep");
   this.createType("fence");
   this.createType("cannon");
+  this.createType("puddle");
 
   var fence;
   for (var i = 0 ; i < 8 ; i++) {
@@ -49,6 +50,9 @@ BlackSheep.prototype.start = function() {
   this.addEntity(cannon, "cannon", 22);
   cannon = new Cannon(this, 4, 330);
   this.addEntity(cannon, "cannon", 52);
+
+  var puddle = new Puddle(this, 2, 400);
+  this.addEntity(puddle, "puddle", 32);
 
   Engine.prototype.start.call(this);
 }
@@ -146,6 +150,33 @@ Cannon.prototype.update = function() {
 }
 
 Cannon.prototype.draw = function(ctx) {
+  this.drawSpriteCentered(ctx);
+  Entity.prototype.draw.call(this, ctx);
+}
+
+//-----------------------------------------------------
+// Puddle
+//-----------------------------------------------------
+
+function Puddle(game, lane, x) {
+  Entity.call(this, game, false, true, false);
+  this.sprite = game.images['puddle2'];
+  this.lane = lane;
+  this.x = x;
+  this.y = lane*60 + 30;
+  this.width = 80;
+  this.height = 60;
+  this.radius = 40;
+}
+
+Puddle.prototype = new Entity();
+Puddle.prototype.constructor = Puddle;
+
+Puddle.prototype.update = function() {
+  Entity.prototype.update.call(this);
+}
+
+Puddle.prototype.draw = function(ctx) {
   this.drawSpriteCentered(ctx);
   Entity.prototype.draw.call(this, ctx);
 }
