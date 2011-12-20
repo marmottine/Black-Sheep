@@ -35,6 +35,7 @@ BlackSheep.prototype.start = function() {
   this.createType("sheep");
   this.createType("fence");
   this.createType("cannon");
+  this.createType("paintball");
   this.createType("puddle");
 
   var fence;
@@ -169,16 +170,57 @@ function Cannon(game, lane, x) {
   // it may be necessary to reduce the height of sticksToLanes entities
   this.height = 50; //60;
   this.radius = 40;
+  this.firingSpeed = 20;
+  this.resetFiring = Math.round(1000/this.firingSpeed);
+  this.firingTimeout = this.resetFiring;
+
 }
 
 Cannon.prototype = new Entity();
 Cannon.prototype.constructor = Cannon;
 
 Cannon.prototype.update = function() {
+  if (this.firingTimeout == 0) {
+    var ball = new Paintball(this.game, this.lane, this.x + 40);
+    this.game.addEntity(ball, "paintball", 10*(this.lane+1) + 7);
+    this.firingTimeout = this.resetFiring;
+  }
+  else {
+    this.firingTimeout--;
+  }
   Entity.prototype.update.call(this);
 }
 
 Cannon.prototype.draw = function(ctx) {
+  this.drawSpriteCentered(ctx);
+  Entity.prototype.draw.call(this, ctx);
+}
+
+//-----------------------------------------------------
+// Paintball
+//-----------------------------------------------------
+
+function Paintball(game, lane, x) {
+  Entity.call(this, game, false, false, false);
+  this.sprite = game.images['paintball'];
+  this.lane = lane;
+  this.x = x;
+  this.y = lane*60 + 30;
+  this.width = 60;
+  this.height = 60;
+  this.radius = 40;
+  this.speed = 2.4;
+}
+
+Paintball.prototype = new Entity();
+Paintball.prototype.constructor = Paintball;
+
+Paintball.prototype.update = function() {
+  this.x += this.speed;
+  Entity.prototype.update.call(this);
+}
+
+Paintball.prototype.draw = function(ctx) {
   this.drawSpriteCentered(ctx);
   Entity.prototype.draw.call(this, ctx);
 }
