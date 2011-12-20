@@ -207,7 +207,7 @@ function Paintball(game, lane, x) {
   this.x = x;
   this.y = lane*60 + 30;
   this.width = 60;
-  this.height = 60;
+  this.height = 58;
   this.radius = 40;
   this.speed = 2.4;
 }
@@ -217,6 +217,21 @@ Paintball.prototype.constructor = Paintball;
 
 Paintball.prototype.update = function() {
   this.x += this.speed;
+  // hit a sheep if overlap
+  var node = this.game.world.types['sheep'].head;
+  while (node !== null) {
+    var e = node.entity;
+    if (this.overlap(e) &&
+        e.hits < e.maxHits) {
+      break;
+    }
+    node = node.Lnext;
+  }
+  if (node !== null) {
+    node.entity.hit();
+    this.toberemoved = true;
+  }
+
   Entity.prototype.update.call(this);
 }
 

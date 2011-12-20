@@ -351,7 +351,6 @@ Engine.prototype.draw = function() {
     }
   }
 
-  this.context.drawImage(this.images['paintball'], 80*4, 60, 80, 60);
   var v = Math.floor(this.time*10 % 3);
   this.context.drawImage(this.images['sprinkle'+v], 80*4, 60*3, 80, 60);
 
@@ -448,7 +447,6 @@ Engine.prototype.addEntity = function(entity, type, layer) {
 };
 
 Engine.prototype.removeEntity = function (node) {
-  console.log("removeEntity " + node.entity);
   var w = this.world;
 
   // remove from the type list
