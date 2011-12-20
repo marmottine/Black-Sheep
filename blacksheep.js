@@ -53,6 +53,8 @@ BlackSheep.prototype.start = function() {
   this.addEntity(sheep, "sheep", 35);
   sheep = new Sheep(this, 2, 650);
   this.addEntity(sheep, "sheep", 35);
+  sheep = new Sheep(this, 4, 650);
+  this.addEntity(sheep, "sheep", 35);
 
   var cannon = new Cannon(this, 3, 180);
   // 42 == 10*(cannon.lane+1) + aLittleSomething // cf fences
