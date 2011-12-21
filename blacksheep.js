@@ -85,7 +85,7 @@ BlackSheep.prototype.draw = function() {
 
 function Sheep(game, lane, x) {
   Entity.call(this, game, false, false);
-  this.speed = 2;
+  this.speed = 60;
   this.animation = new Animation(game, [this.game.images['sheep1-1'],
                                         this.game.images['sheep1-2'],
                                         this.game.images['sheep1-3'],
@@ -104,7 +104,7 @@ Sheep.prototype = new Entity();
 Sheep.prototype.constructor = Sheep;
 
 Sheep.prototype.update = function() {
-  this.x -= this.speed;
+  this.x -= this.speed * this.game.delta;
   Entity.prototype.update.call(this);
 }
 
@@ -170,8 +170,8 @@ function Cannon(game, lane, x) {
   // it may be necessary to reduce the height of sticksToLanes entities
   this.height = 50; //60;
   this.radius = 40;
-  this.firingSpeed = 20;
-  this.resetFiring = Math.round(1000/this.firingSpeed);
+  this.firingSpeed = 1.2;
+  this.resetFiring = 1/this.firingSpeed;
   this.firingTimeout = this.resetFiring;
 
 }
@@ -180,13 +180,13 @@ Cannon.prototype = new Entity();
 Cannon.prototype.constructor = Cannon;
 
 Cannon.prototype.update = function() {
-  if (this.firingTimeout == 0) {
+  if (this.firingTimeout <= 0) {
     var ball = new Paintball(this.game, this.lane, this.x + 40);
     this.game.addEntity(ball, "paintball", 10*(this.lane+1) + 7);
     this.firingTimeout = this.resetFiring;
   }
   else {
-    this.firingTimeout--;
+    this.firingTimeout -= 1 * this.game.delta;
   }
   Entity.prototype.update.call(this);
 }
@@ -209,14 +209,14 @@ function Paintball(game, lane, x) {
   this.width = 60;
   this.height = 58;
   this.radius = 40;
-  this.speed = 2.4;
+  this.speed = 150;
 }
 
 Paintball.prototype = new Entity();
 Paintball.prototype.constructor = Paintball;
 
 Paintball.prototype.update = function() {
-  this.x += this.speed;
+  this.x += this.speed * this.game.delta;
   // hit a sheep if overlap
   var node = this.game.world.types['sheep'].head;
   while (node !== null) {
@@ -253,8 +253,8 @@ function Puddle(game, lane, x) {
   this.width = 80;
   this.height = 60;
   this.radius = 40;
-  this.firingSpeed = 60; // usually between 10 and 200
-  this.resetFiring = Math.round(1000/this.firingSpeed);
+  this.firingSpeed = 1.3;
+  this.resetFiring = 1/this.firingSpeed;
   this.firingTimeout = this.resetFiring;
 }
 
@@ -262,7 +262,7 @@ Puddle.prototype = new Entity();
 Puddle.prototype.constructor = Puddle;
 
 Puddle.prototype.update = function() {
-  if (this.firingTimeout == 0) {
+  if (this.firingTimeout <= 0) {
     // hit a sheep if possible (the most on the left)
     var mostLeft = null;
     var node = this.game.world.types['sheep'].head;
@@ -281,7 +281,7 @@ Puddle.prototype.update = function() {
     }
   }
   else {
-    this.firingTimeout--;
+    this.firingTimeout -= 1 * this.game.delta;
   }
   Entity.prototype.update.call(this);
 }
