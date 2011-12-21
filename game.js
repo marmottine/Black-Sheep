@@ -112,52 +112,46 @@ Engine.prototype.init = function(element, width, height, image_list, sound_list,
   }
 
   // listen to input events
-  this.context.canvas.addEventListener('mousedown', this.mouseDown.bind(this));
-  this.context.canvas.addEventListener('mouseup', this.mouseUp.bind(this));
-  this.context.canvas.addEventListener('mouseout', this.mouseOut.bind(this));
-  this.context.canvas.addEventListener('mousemove', this.mouseMove.bind(this));
-}
+  var that = this;
 
-Engine.prototype.mouseDown = function(e) {
-  // 'this' is the game because of bind
-  console.log("mouseDown ");
-  if (e.pageX > this.context.canvas.offsetLeft &&
-      e.pageX < this.context.canvas.offsetLeft + this.context.canvas.width &&
-      e.pageY > this.context.canvas.offsetTop &&
-      e.pageY < this.context.canvas.offsetTop + this.context.canvas.height) {
-      console.log("add event");
-    this.inputEvents.push({event:"mdown",
-                       x: (e.pageX - this.context.canvas.offsetLeft) / this.scale - this.offset.x,
-                       y: (e.pageY - this.context.canvas.offsetTop) / this.scale - this.offset.y});
+  function mouseDown(e) {
+    if (e.pageX > that.context.canvas.offsetLeft &&
+        e.pageX < that.context.canvas.offsetLeft + that.context.canvas.width &&
+        e.pageY > that.context.canvas.offsetTop &&
+        e.pageY < that.context.canvas.offsetTop + that.context.canvas.height) {
+      that.inputEvents.push({event:"mdown",
+                         x: (e.pageX - that.context.canvas.offsetLeft) / that.scale - that.offset.x,
+                         y: (e.pageY - that.context.canvas.offsetTop) / that.scale - that.offset.y});
+    }
   }
-}
 
-Engine.prototype.mouseUp = function(e) {
-  if (e.pageX > this.context.canvas.offsetLeft &&
-      e.pageX < this.context.canvas.offsetLeft + this.width &&
-      e.pageY > this.context.canvas.offsetTop &&
-      e.pageY < this.context.canvas.offsetTop + this.height) {
-    this.inputEvents.push({event:"mup",
-                       x: (e.pageX - this.context.canvas.offsetLeft) / this.scale - this.offset.x,
-                       y: (e.pageY - this.context.canvas.offsetTop) / this.scale - this.offset.y});
+  function mouseUp(e) {
+    if (e.pageX > that.context.canvas.offsetLeft &&
+        e.pageX < that.context.canvas.offsetLeft + that.width &&
+        e.pageY > that.context.canvas.offsetTop &&
+        e.pageY < that.context.canvas.offsetTop + that.height) {
+      that.inputEvents.push({event:"mup",
+                         x: (e.pageX - that.context.canvas.offsetLeft) / that.scale - that.offset.x,
+                         y: (e.pageY - that.context.canvas.offsetTop) / that.scale - that.offset.y});
+    }
+    else {
+      that.inputEvents.push({event:"mup", x: -1, y: -1});
+    }
   }
-  else {
-    console.log("mouse up outside canvas");
-    this.inputEvents.push({event:"mup",
-                       x: -1,
-                       y: -1});
+
+  function mouseOut(e) {
+    that.inputEvents.push({event:"mout", x: -2, y: -2});
   }
-}
 
-Engine.prototype.mouseOut = function(e) {
-  this.inputEvents.push({event:"mout",
-                         x: -2,
-                         y: -2});
-}
+  function mouseMove(e) {
+    that.mouse = {x: (e.pageX - that.context.canvas.offsetLeft) / that.scale - that.offset.x,
+                  y: (e.pageY - that.context.canvas.offsetTop) / that.scale - that.offset.y};
+  }
 
-Engine.prototype.mouseMove = function(e) {
-  this.mouse = {x: (e.pageX - this.context.canvas.offsetLeft) / this.scale - this.offset.x,
-                y: (e.pageY - this.context.canvas.offsetTop) / this.scale - this.offset.y};
+  this.context.canvas.addEventListener('mousedown', mouseDown);
+  this.context.canvas.addEventListener('mouseup', mouseUp);
+  this.context.canvas.addEventListener('mouseout', mouseOut);
+  this.context.canvas.addEventListener('mousemove', mouseMove);
 }
 
 Engine.prototype.load_progress = function(loaded, total, callback) {
