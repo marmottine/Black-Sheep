@@ -37,6 +37,8 @@ BlackSheep.prototype.start = function() {
   this.createType("cannon");
   this.createType("paintball");
   this.createType("puddle");
+  // used for update. update weapons first so that sheeps know they are hit asap.
+  this.world.type_ordering = new Array("puddle", "paintball", "cannon", "fence", "sheep");
 
   var fence;
   for (var i = 0 ; i < 8 ; i++) {
@@ -93,7 +95,7 @@ function Sheep(game, lane, x) {
   this.lane = lane;
   this.x = x;
   this.y = lane*60 + 30;
-  this.width = 80;
+  this.width = 30;
   this.height = 60;
   this.radius = 40;
   this.hits = 0;
@@ -206,7 +208,7 @@ function Paintball(game, lane, x) {
   this.lane = lane;
   this.x = x;
   this.y = lane*60 + 30;
-  this.width = 60;
+  this.width = 30;
   this.height = 58;
   this.radius = 40;
   this.speed = 150;
@@ -221,8 +223,7 @@ Paintball.prototype.update = function() {
   var node = this.game.world.types['sheep'].head;
   while (node !== null) {
     var e = node.entity;
-    if (this.overlap(e) &&
-        e.hits < e.maxHits) {
+    if (this.overlap(e) && e.hits < e.maxHits) {
       break;
     }
     node = node.Lnext;

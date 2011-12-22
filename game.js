@@ -245,19 +245,29 @@ Engine.prototype.tick = function() {
 }
 
 Engine.prototype.update = function() {
-  // loop through all entities, call update();
-  for (var i = 0 ; i < this.world.layers.length ; i++) {
-    if (! this.world.layers[i]) {
-      continue;
+  if (this.world.type_ordering) {
+    for each (var t in this.world.type_ordering) {
+      if (! this.world.types[t]) {
+        console.log("warning: type " + t + " does not exist and will not be updated");
+        continue;
+      }
+      node = this.world.types[t].head;
+      while (node !== null) {
+        node.entity.update();
+        node = node.Tnext;
+      }
     }
-    node = this.world.layers[i].head;
-    if (node == null) {
-      continue;
-    }
-    node.entity.update();
-    while (node.Lnext !== null) {
-      node = node.Lnext;
-      node.entity.update();
+  }
+  else {
+    for (var i = 0 ; i < this.world.layers.length ; i++) {
+      if (! this.world.layers[i]) {
+        continue;
+      }
+      node = this.world.layers[i].head;
+      while (node !== null) {
+        node.entity.update();
+        node = node.Lnext;
+      }
     }
   }
   this.inputEvents = [];
@@ -266,17 +276,11 @@ Engine.prototype.update = function() {
   node = null;
   for each (var l in this.world.layers) {
     node = l.head;
-    if (node == null) {
-      continue;
-    }
-    if (node.entity.toberemoved) {
-        this.removeEntity(node);
-      }
-    while (node.Lnext !== null) {
-      node = node.Lnext;
+    while (node !== null) {
       if (node.entity.toberemoved) {
         this.removeEntity(node);
       }
+      node = node.Lnext;
     }
   }
 
@@ -589,10 +593,18 @@ Entity.prototype.drawSpriteCentered = function(ctx) {
 }
 
 Entity.prototype.outsideScreen = function() {
-  return (this.x - this.width/2 > this.game.width ||
-          this.x + this.width/2 < 0 ||
-          this.y - this.height/2 > this.game.height ||
-          this.y + this.height/2 < 0 );
+  if (this.sprite) {
+    return (this.x - this.sprite.width/2 > this.game.width ||
+            this.x + this.sprite.width/2 < 0 ||
+            this.y - this.sprite.height/2 > this.game.height ||
+            this.y + this.sprite.height/2 < 0 );
+  }
+  else {
+    return (this.x - this.width/2 > this.game.width ||
+            this.x + this.width/2 < 0 ||
+            this.y - this.height/2 > this.game.height ||
+            this.y + this.height/2 < 0 );
+  }
 }
 
 Entity.prototype.onMe = function(coord) {
