@@ -13,7 +13,7 @@ window.onload = function() {
                     'sheep2-1', 'sheep2-2', 'sheep2-3', 'sheep2-4',
                     'sheep3-1', 'sheep3-2', 'sheep3-3', 'sheep3-4',
                     'sheep4-1', 'sheep4-2', 'sheep4-3', 'sheep4-4',
-                    'fence3', 'puddle2'];
+                    'fence3', 'puddle2', 'tin'];
   var sound_list = ['baa0', 'baa1', 'baa2'];
   game = new BlackSheep();
   game.init(element, 640, 480, image_list, sound_list,
@@ -37,8 +37,9 @@ BlackSheep.prototype.start = function() {
   this.createType("cannon");
   this.createType("paintball");
   this.createType("puddle");
+  this.createType("tin");
   // used for update. update weapons first so that sheeps know they are hit asap.
-  this.world.type_ordering = new Array("puddle", "paintball", "cannon", "fence", "sheep");
+  this.world.type_ordering = new Array("puddle", "paintball", "cannon", "tin", "fence", "sheep");
 
   var fence;
   for (var i = 0 ; i < 8 ; i++) {
@@ -47,25 +48,27 @@ BlackSheep.prototype.start = function() {
   }
 
   var sheep = new Sheep(this, 2, 540);
-  this.addEntity(sheep, "sheep", 35);
+  this.addEntity(sheep, "sheep", 37);
   sheep = new Sheep(this, 2, 600);
-  this.addEntity(sheep, "sheep", 35);
+  this.addEntity(sheep, "sheep", 37);
   sheep = new Sheep(this, 2, 620);
-  this.addEntity(sheep, "sheep", 35);
-  sheep = new Sheep(this, 2, 670);
-  this.addEntity(sheep, "sheep", 35);
+  this.addEntity(sheep, "sheep", 37);
   sheep = new Sheep(this, 2, 650);
-  this.addEntity(sheep, "sheep", 35);
+  this.addEntity(sheep, "sheep", 37);
   sheep = new Sheep(this, 4, 650);
-  this.addEntity(sheep, "sheep", 35);
+  this.addEntity(sheep, "sheep", 37);
+  sheep = new Sheep(this, 5, 650);
+  this.addEntity(sheep, "sheep", 67);
 
   var cannon = new Cannon(this, 3, 180);
-  // 42 == 10*(cannon.lane+1) + aLittleSomething // cf fences
-  this.addEntity(cannon, "cannon", 42);
+  this.addEntity(cannon, "cannon", 45);
   cannon = new Cannon(this, 1, 300);
-  this.addEntity(cannon, "cannon", 22);
+  this.addEntity(cannon, "cannon", 25);
   cannon = new Cannon(this, 4, 330);
-  this.addEntity(cannon, "cannon", 52);
+  this.addEntity(cannon, "cannon", 55);
+
+  var tin = new Tin(this, 5, 200);
+  this.addEntity(tin, "tin", 14);
 
   var puddle = new Puddle(this, 2, 400);
   this.addEntity(puddle, "puddle", 32);
@@ -138,9 +141,9 @@ function Fence(game, lane) {
   Entity.call(this, game, false, true);
   this.sprite = game.images['fence3'];
   this.lane = lane;
-  this.x = 100;
+  this.x = 30;
   this.y = lane*60 + 30;
-  this.width = 80;
+  this.width = 30;
   this.height = 60;
   this.radius = 40;
 }
@@ -184,7 +187,7 @@ Cannon.prototype.constructor = Cannon;
 Cannon.prototype.update = function() {
   if (this.firingTimeout <= 0) {
     var ball = new Paintball(this.game, this.lane, this.x + 40);
-    this.game.addEntity(ball, "paintball", 10*(this.lane+1) + 7);
+    this.game.addEntity(ball, "paintball", 10*(this.lane+1) + 8);
     this.firingTimeout = this.resetFiring;
   }
   else {
@@ -196,6 +199,10 @@ Cannon.prototype.update = function() {
 Cannon.prototype.draw = function(ctx) {
   this.drawSpriteCentered(ctx);
   Entity.prototype.draw.call(this, ctx);
+}
+
+Cannon.prototype.getLayer = function() {
+  return 10 * (this.lane + 1) + 5;
 }
 
 //-----------------------------------------------------
@@ -226,7 +233,7 @@ Paintball.prototype.update = function() {
     if (this.overlap(e) && e.hits < e.maxHits) {
       break;
     }
-    node = node.Lnext;
+    node = node.Tnext;
   }
   if (node !== null) {
     node.entity.hit();
@@ -252,7 +259,7 @@ function Puddle(game, lane, x) {
   this.x = x;
   this.y = lane*60 + 30;
   this.width = 80;
-  this.height = 60;
+  this.height = 50;
   this.radius = 40;
   this.firingSpeed = 1.3;
   this.resetFiring = 1/this.firingSpeed;
@@ -274,7 +281,7 @@ Puddle.prototype.update = function() {
           (mostLeft == null || e.x < mostLeft.x)) {
         mostLeft = e;
       }
-      node = node.Lnext;
+      node = node.Tnext;
     }
     if (mostLeft !== null) {
       this.firingTimeout = this.resetFiring;
@@ -290,4 +297,51 @@ Puddle.prototype.update = function() {
 Puddle.prototype.draw = function(ctx) {
   this.drawSpriteCentered(ctx);
   Entity.prototype.draw.call(this, ctx);
+}
+
+//-----------------------------------------------------
+// Tin
+//-----------------------------------------------------
+
+function Tin(game, lane, x) {
+  Entity.call(this, game, true, true, true);
+  this.sprite = game.images['tin'];
+  this.lane = lane;
+  this.x = x;
+  this.y = lane*60 + 30;
+  this.width = 34;
+  this.height = 58;
+  this.radius = 40;
+}
+
+Tin.prototype = new Entity();
+Tin.prototype.constructor = Tin;
+
+Tin.prototype.update = function() {
+  // spills if a sheep touch it
+  var node = this.game.world.types['sheep'].head;
+  while (node !== null) {
+    var e = node.entity;
+    if (this.overlap(e)) {
+      break;
+    }
+    node = node.Tnext;
+  }
+  if (node !== null) {
+    // FIXME: create an anim of the tin being spilt
+    var puddle = new Puddle(this.game, this.lane, this.x - 50);
+    this.game.addEntity(puddle, "puddle", 10*(this.lane + 1) + 2);
+    this.toberemoved = true;
+  }
+
+  Entity.prototype.update.call(this);
+}
+
+Tin.prototype.draw = function(ctx) {
+  this.drawSpriteCentered(ctx);
+  Entity.prototype.draw.call(this, ctx);
+}
+
+Tin.prototype.getLayer = function() {
+  return 10 * (this.lane + 1) + 4;
 }

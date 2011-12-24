@@ -71,7 +71,7 @@ Engine.prototype.init = function(element, width, height, image_list, sound_list,
     var img = new Image();
     var that = this;
     img.addEventListener("load", function() {
-      console.log('finished loading image ' + this.src);
+      // console.log('finished loading image ' + this.src);
       loaded++;
       that.load_progress(loaded, total, callback);
     });
@@ -88,7 +88,7 @@ Engine.prototype.init = function(element, width, height, image_list, sound_list,
     var snd = new Audio();
     var that = this;
     snd.addEventListener("loadeddata", function() {
-      console.log('finished loading sound ' + this.src);
+      // console.log('finished loading sound ' + this.src);
       loaded++;
       that.load_progress(loaded, total, callback);
     });
