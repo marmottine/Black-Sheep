@@ -56,7 +56,7 @@ BlackSheep.prototype.start = function() {
   sheep = new Sheep(this, 2, 650);
   this.addEntity(sheep, "sheep", 37);
   sheep = new Sheep(this, 4, 650);
-  this.addEntity(sheep, "sheep", 37);
+  this.addEntity(sheep, "sheep", 57);
   sheep = new Sheep(this, 5, 650);
   this.addEntity(sheep, "sheep", 67);
 
@@ -122,7 +122,6 @@ Sheep.prototype.draw = function(ctx) {
 Sheep.prototype.hit = function() {
   if (this.hits < this.maxHits) {
     this.hits++;
-    console.log("I've been hit " + this.hits + " times");
     this.animation = new Animation(game, [this.game.images['sheep' + (this.hits+1) + '-1'],
                                           this.game.images['sheep' + (this.hits+1) + '-2'],
                                           this.game.images['sheep' + (this.hits+1) + '-3'],
@@ -178,7 +177,6 @@ function Cannon(game, lane, x) {
   this.firingSpeed = 1.2;
   this.resetFiring = 1/this.firingSpeed;
   this.firingTimeout = this.resetFiring;
-
 }
 
 Cannon.prototype = new Entity();

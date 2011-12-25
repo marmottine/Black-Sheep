@@ -187,19 +187,6 @@ Engine.prototype.start = function() {
 
   this.context.canvas.focus();
 
-/*  var that = this;
-  this.context.canvas.addEventListener("click", function(e) {
-    that.click = getXandY(e);
-    // stop event from propagating to DOM parents
-    e.stopPropagation();
-    // prevents action from the browser (eg. tick a checkbox)
-    e.preventDefault();
-  });
-    
-  this.context.canvas.addEventListener("mousemove", function(e) {
-    that.mouse = getXandY(e);
-  });*/
-
   var that = this;
   (function gameLoop() {
     if (that.running) {
@@ -278,7 +265,7 @@ Engine.prototype.update = function() {
     node = l.head;
     while (node !== null) {
       if (node.entity.toberemoved) {
-        this.removeEntity(node);
+        this.removeEntity(node.entity);
       }
       node = node.Lnext;
     }
@@ -359,13 +346,9 @@ Engine.prototype.draw = function() {
       continue;
     }
     node = this.world.layers[i].head;
-    if (node == null) {
-      continue;
-    }
-    node.entity.draw(this.context);
-    while (node.Lnext !== null) {
-      node = node.Lnext;
+    while (node !== null) {
       node.entity.draw(this.context);
+      node = node.Lnext;
     }
   }
 
@@ -410,6 +393,10 @@ Engine.prototype.addEntity = function(entity, type, layer) {
     Lnext: null,
     Lprec: null
   };
+  entity.world = {};
+  entity.world.node = node;
+  entity.world.type = type;
+  entity.world.layer = layer;
 
   // "push front" into the right type list
   if (type in this.world.types) {
@@ -444,86 +431,53 @@ Engine.prototype.addEntity = function(entity, type, layer) {
   }
 };
 
-Engine.prototype.removeEntity = function (node) {
-  var w = this.world;
+Engine.prototype.removeEntity = function(entity) {
+  var node = entity.world.node;
 
   // remove from the type list
+  var TList = this.world.types[entity.world.type];
   if (node.Tprev == null) {
-    // find the list where node is
-    for each (var t in w.types) {
-      if (t.head === node) {
-        t.head = node.Tnext;
-          break;
-      }
-    }
+    TList.head = node.Tnext;
   }
   else {
-    node.Tprev.Tnext = node.Tnext;
+    node.Tprev.Lnext = node.Tnext;
   }
-  if (node.Tnext == null) {
-    // find the list where node is
-    for each (var t in w.types) {
-      if (t.tail === node) {
-        t.tail = node.Tprev;
-        break;
-      }
-    }
+  if (node.Tnext === null) {
+    TList.tail = node.Tprev;
   }
   else {
     node.Tnext.Tprev = node.Tprev;
   }
     
   // remove from the layer list
+  var LList = this.world.layers[entity.world.layer];
   if (node.Lprev == null) {
-    // find the list where node is
-    for each (var l in w.layers) {
-      if (l.head === node) {
-        l.head = node.Lnext;
-        break;
-      }
-    }
+    LList.head = node.Lnext;
   }
   else {
     node.Lprev.Lnext = node.Lnext;
   }
-  if (node.Lnext == null) {
-    // find the list where node is
-    for each (var l in w.layers) {
-      if (l.tail === node) {
-        l.tail = node.Lprev;
-        break;
-      }
-    }
+  if (node.Lnext === null) {
+    LList.tail = node.Lprev;
   }
   else {
     node.Lnext.Lprev = node.Lprev;
   }
 }
 
-Engine.prototype.setEntityLayer = function(node, layer) {
-  var w = this.world;
+Engine.prototype.setEntityLayer = function(entity, layer) {
+  var node = entity.world.node;
+  var LList = this.world.layers[entity.world.layer];
 
   // remove node from its layer list
   if (node.Lprev == null) {
-    // find the list where node is
-    for each (var l in w.layers) {
-      if (l.head === node) {
-        l.head = node.Lnext;
-        break;
-      }
-    }
+    LList.head = node.Lnext;
   }
   else {
     node.Lprev.Lnext = node.Lnext;
   }
-  if (node.Lnext == null) {
-    // find the list where node is
-    for each (var l in w.layers) {
-      if (l.tail === node) {
-        l.tail = node.Lprev;
-        break;
-      }
-    }
+  if (node.Lnext === null) {
+    LList.tail = node.Lprev;
   }
   else {
     node.Lnext.Lprev = node.Lprev;
@@ -533,8 +487,8 @@ Engine.prototype.setEntityLayer = function(node, layer) {
   if (! (layer in this.world.layers)) {
     this.createLayer(layer);
   }
-  var Llist = w.layers[layer];
-  if (Llist.head === null) {
+  Llist = this.world.layers[layer];
+  if (Llist.head == null) {
     Llist.head = node;
     Llist.tail = node;
   }
@@ -704,6 +658,8 @@ Entity.prototype.mouseUp = function(event) {
       // this entity sticks to either lane
       this.lane = Math.floor(event.y / 60);
       this.y = this.lane*60 + 30;
+      var layer = this.getLayer();
+      this.game.setEntityLayer(this, layer);
     }
     this.dragged = false;
     this.game.draggedEntity = null;
