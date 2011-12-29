@@ -246,21 +246,12 @@ Engine.prototype.update = function() {
     }
   }
   else {
-    for (var i = 0 ; i < this.world.layers.length ; i++) {
-      if (! this.world.layers[i]) {
-        continue;
-      }
-      node = this.world.layers[i].head;
-      while (node !== null) {
-        node.entity.update();
-        node = node.Lnext;
-      }
-    }
+    console.log("warning: world.type_ordering is undefined. Entities are not updated.");
   }
   this.inputEvents = [];
 
   // loop again, remove those marked for removal
-  node = null;
+  var node = null;
   for each (var l in this.world.layers) {
     node = l.head;
     while (node !== null) {
@@ -341,11 +332,8 @@ Engine.prototype.draw = function() {
 
   // loop here through all entities, call draw()
   var node = null;
-  for (var i = 0 ; i < this.world.layers.length ; i++) {
-    if (! this.world.layers[i]) {
-      continue;
-    }
-    node = this.world.layers[i].head;
+  for each (var l in this.world.layers) {
+    node = l.head;
     while (node !== null) {
       node.entity.draw(this.context);
       node = node.Lnext;
@@ -393,15 +381,16 @@ Engine.prototype.addEntity = function(entity, type, layer) {
     Lnext: null,
     Lprec: null
   };
-  entity.world = {};
-  entity.world.node = node;
-  entity.world.type = type;
-  entity.world.layer = layer;
+  entity.world = {
+    node: node,
+    type: type,
+    layer: layer
+  };
 
   // "push front" into the right type list
   if (type in this.world.types) {
     var Tlist = this.world.types[type];
-    if (Tlist.head === null) {
+    if (Tlist.head == null) {
       Tlist.head = node;
       Tlist.tail = node;
     }
@@ -420,7 +409,7 @@ Engine.prototype.addEntity = function(entity, type, layer) {
     this.createLayer(layer);
   }
   var Llist = this.world.layers[layer];
-  if (Llist.head === null) {
+  if (Llist.head == null) {
     Llist.head = node;
     Llist.tail = node;
   }
@@ -440,9 +429,9 @@ Engine.prototype.removeEntity = function(entity) {
     TList.head = node.Tnext;
   }
   else {
-    node.Tprev.Lnext = node.Tnext;
+    node.Tprev.Tnext = node.Tnext;
   }
-  if (node.Tnext === null) {
+  if (node.Tnext == null) {
     TList.tail = node.Tprev;
   }
   else {
@@ -457,7 +446,7 @@ Engine.prototype.removeEntity = function(entity) {
   else {
     node.Lprev.Lnext = node.Lnext;
   }
-  if (node.Lnext === null) {
+  if (node.Lnext == null) {
     LList.tail = node.Lprev;
   }
   else {
@@ -476,7 +465,7 @@ Engine.prototype.setEntityLayer = function(entity, layer) {
   else {
     node.Lprev.Lnext = node.Lnext;
   }
-  if (node.Lnext === null) {
+  if (node.Lnext == null) {
     LList.tail = node.Lprev;
   }
   else {
@@ -491,12 +480,15 @@ Engine.prototype.setEntityLayer = function(entity, layer) {
   if (Llist.head == null) {
     Llist.head = node;
     Llist.tail = node;
+    node.Lnext = null;
   }
   else {
     node.Lnext = Llist.head;
     Llist.head.Lprev = node;
     Llist.head = node;
   }
+  node.Lprev = null;
+  entity.world.layer = layer;
 }
 
 //-----------------------------------------------------
