@@ -13,7 +13,8 @@ window.onload = function() {
                     'sheep2-1', 'sheep2-2', 'sheep2-3', 'sheep2-4',
                     'sheep3-1', 'sheep3-2', 'sheep3-3', 'sheep3-4',
                     'sheep4-1', 'sheep4-2', 'sheep4-3', 'sheep4-4',
-                    'fence3', 'puddle2', 'tin'];
+                    'fence3', 'puddle2', 'tin',
+                    'tin-anim-knocked-over-1', 'tin-anim-knocked-over-2'];
   var sound_list = ['baa0', 'baa1', 'baa2'];
   game = new BlackSheep();
   game.init(element, 640, 480, image_list, sound_list,
@@ -38,8 +39,9 @@ BlackSheep.prototype.start = function() {
   this.createType("paintball");
   this.createType("puddle");
   this.createType("tin");
+  this.createType("tinKnockedOver");
   // used for update. update weapons first so that sheeps know they are hit asap.
-  this.world.type_ordering = new Array("puddle", "paintball", "cannon", "tin", "fence", "sheep");
+  this.world.type_ordering = new Array("puddle", "paintball", "cannon", "tin", "tinKnockedOver", "fence", "sheep");
 
   var fence;
   for (var i = 0 ; i < 8 ; i++) {
@@ -68,7 +70,7 @@ BlackSheep.prototype.start = function() {
   this.addEntity(cannon, "cannon", 55);
 
   var tin = new Tin(this, 5, 200);
-  this.addEntity(tin, "tin", 14);
+  this.addEntity(tin, "tin", 64);
 
   var puddle = new Puddle(this, 2, 400);
   this.addEntity(puddle, "puddle", 32);
@@ -326,9 +328,8 @@ Tin.prototype.update = function() {
     node = node.Tnext;
   }
   if (node !== null) {
-    // FIXME: create an anim of the tin being spilt
-    var puddle = new Puddle(this.game, this.lane, this.x - 50);
-    this.game.addEntity(puddle, "puddle", 10*(this.lane + 1) + 2);
+    var tin = new TinKnockedOver(this.game, this.lane, this.x - 30);
+    this.game.addEntity(tin, "tinKnockedOver", 10*(this.lane + 1) + 2);
     this.toberemoved = true;
   }
 
@@ -342,4 +343,45 @@ Tin.prototype.draw = function(ctx) {
 
 Tin.prototype.getLayer = function() {
   return 10 * (this.lane + 1) + 4;
+}
+
+//-----------------------------------------------------
+// TinKnockedOver
+//-----------------------------------------------------
+
+function TinKnockedOver(game, lane, x) {
+  Entity.call(this, game, false, true, false);
+  this.duration = 1.6;
+  this.animImages = [this.game.images['tin-anim-knocked-over-1'],
+                     this.game.images['tin-anim-knocked-over-2'] ];
+  this.animation = new Animation(game, this.animImages, this.duration / this.animImages.length, false);
+  this.lane = lane;
+  this.x = x;
+  this.y = lane*60 + 30;
+  this.width = 100;
+  this.height = 58;
+  this.radius = 50;
+  this.timeout = this.duration;
+}
+
+TinKnockedOver.prototype = new Entity();
+TinKnockedOver.prototype.constructor = TinKnockedOver;
+
+TinKnockedOver.prototype.update = function() {
+  if (this.timeout <= 0) {
+    var puddle = new Puddle(this.game, this.lane, this.x - 50);
+    this.game.addEntity(puddle, "puddle", 10*(this.lane + 1) + 2);
+    this.toberemoved = true;
+  }
+  else {
+    this.timeout -= this.game.delta;
+  }
+
+  Entity.prototype.update.call(this);
+}
+
+TinKnockedOver.prototype.draw = function(ctx) {
+  this.sprite = this.animation.getFrame(this.game.delta);
+  this.drawSpriteCentered(ctx);
+  Entity.prototype.draw.call(this, ctx);
 }
