@@ -318,19 +318,21 @@ Tin.prototype = new Entity();
 Tin.prototype.constructor = Tin;
 
 Tin.prototype.update = function() {
-  // spills if a sheep touch it
-  var node = this.game.world.types['sheep'].head;
-  while (node !== null) {
-    var e = node.entity;
-    if (this.overlap(e)) {
-      break;
+  // spills if a sheep touches it
+  if (! this.dragged) {
+    var node = this.game.world.types['sheep'].head;
+    while (node !== null) {
+      var e = node.entity;
+      if (this.overlap(e)) {
+        break;
+      }
+      node = node.Tnext;
     }
-    node = node.Tnext;
-  }
-  if (node !== null) {
-    var tin = new TinKnockedOver(this.game, this.lane, this.x - 30);
-    this.game.addEntity(tin, "tinKnockedOver", 10*(this.lane + 1) + 2);
-    this.toberemoved = true;
+    if (node !== null) {
+      var tin = new TinKnockedOver(this.game, this.lane, this.x - 30);
+      this.game.addEntity(tin, "tinKnockedOver", 10*(this.lane + 1) + 2);
+      this.toberemoved = true;
+    }
   }
 
   Entity.prototype.update.call(this);
