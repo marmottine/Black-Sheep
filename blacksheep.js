@@ -185,14 +185,17 @@ Cannon.prototype = new Entity();
 Cannon.prototype.constructor = Cannon;
 
 Cannon.prototype.update = function() {
-  if (this.firingTimeout <= 0) {
-    var ball = new Paintball(this.game, this.lane, this.x + 40);
-    this.game.addEntity(ball, "paintball", 10*(this.lane+1) + 8);
-    this.firingTimeout = this.resetFiring;
+  if (! this.dragged) {
+    if (this.firingTimeout <= 0) {
+      var ball = new Paintball(this.game, this.lane, this.x + 40);
+      this.game.addEntity(ball, "paintball", 10*(this.lane+1) + 8);
+      this.firingTimeout = this.resetFiring;
+    }
+    else {
+      this.firingTimeout -= 1 * this.game.delta;
+    }
   }
-  else {
-    this.firingTimeout -= 1 * this.game.delta;
-  }
+  
   Entity.prototype.update.call(this);
 }
 
