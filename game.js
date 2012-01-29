@@ -152,6 +152,9 @@ Engine.prototype.init = function(element, width, height, image_list, sound_list,
   this.context.canvas.addEventListener('mouseup', mouseUp);
   this.context.canvas.addEventListener('mouseout', mouseOut);
   this.context.canvas.addEventListener('mousemove', mouseMove);
+
+  // create type for entities that are dragged
+  this.createType("phantom");
 }
 
 Engine.prototype.load_progress = function(loaded, total, callback) {
@@ -509,6 +512,7 @@ function Entity(game, draggable, hasExclusivePlace, sticksToLanes) {
     this.game.exclusivePlaceEntities.push(this);
   }
   this.sticksToLanes = sticksToLanes || false;
+  this.phantom = null;
 }
 
 Entity.prototype.update = function() {
@@ -620,6 +624,12 @@ Entity.prototype.mouseDown = function(event) {
     this.saveState();
     this.dragged = true;
     this.game.draggedEntity = this;
+
+    // create phantom
+    var phantom = new Phantom(this.game, this);
+    this.phantom = phantom;
+    this.game.addEntity(phantom, "phantom", 100);
+
     return true;
   }
 }
@@ -643,6 +653,7 @@ Entity.prototype.mouseUp = function(event) {
         this.restoreState();
         this.dragged = false;
         this.game.draggedEntity = null;
+        this.phantom.toberemoved = true;
         return false;
       }
     }
@@ -656,6 +667,7 @@ Entity.prototype.mouseUp = function(event) {
     this.dragged = false;
     this.game.draggedEntity = null;
     this.saveState();
+    this.phantom.toberemoved = true;
   }
   return false;
 }
@@ -665,8 +677,34 @@ Entity.prototype.mouseOut = function(event) {
     this.restoreState();
     this.dragged = false;
     this.game.draggedEntity = null;
+    this.phantom.toberemoved = true;
   }
   return false;
+}
+
+//-----------------------------------------------------
+// Phantom
+//-----------------------------------------------------
+
+function Phantom(game, model) {
+  Entity.call(this, game, false, true, true);
+  this.game = model.game;
+  this.toberemoved = false;
+  this.hasExclusivePlace = model.hasExclusivePlace || false;
+  if (this.hasExclusivePlace) {
+    this.game.exclusivePlaceEntities.push(this);
+  }
+  this.x = model.x;
+  this.y = model.y;
+  this.sprite = model.sprite;
+}
+
+Phantom.prototype = new Entity();
+Phantom.prototype.constructor = Phantom;
+
+Phantom.prototype.draw = function(ctx) {
+  this.drawSpriteCentered(ctx);
+  Entity.prototype.draw.call(this, ctx);
 }
 
 //-----------------------------------------------------
