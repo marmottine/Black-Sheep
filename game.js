@@ -628,7 +628,7 @@ Entity.prototype.mouseDown = function(event) {
     // create phantom
     var phantom = new Phantom(this.game, this);
     this.phantom = phantom;
-    this.game.addEntity(phantom, "phantom", 100);
+    this.game.addEntity(phantom, "phantom", this.getLayer() - 1);
 
     return true;
   }
@@ -696,7 +696,7 @@ function Phantom(game, model) {
   }
   this.x = model.x;
   this.y = model.y;
-  this.sprite = model.sprite;
+  this.sprite = model.phantom_sprite;
 }
 
 Phantom.prototype = new Entity();

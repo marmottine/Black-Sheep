@@ -7,13 +7,13 @@ var game = null;
 window.onload = function() {
   var element = document.getElementById('surface');
 
-  var image_list = ['grass', 'cannon', 'paintball',
+  var image_list = ['grass', 'cannon', 'cannon-phantom', 'paintball',
                     'sprinkle0', 'sprinkle1', 'sprinkle2',
                     'sheep1-1', 'sheep1-2', 'sheep1-3', 'sheep1-4',
                     'sheep2-1', 'sheep2-2', 'sheep2-3', 'sheep2-4',
                     'sheep3-1', 'sheep3-2', 'sheep3-3', 'sheep3-4',
                     'sheep4-1', 'sheep4-2', 'sheep4-3', 'sheep4-4',
-                    'fence3', 'puddle2', 'tin',
+                    'fence3', 'puddle2', 'tin', 'tin-phantom',
                     'tin-anim-knocked-over-1', 'tin-anim-knocked-over-2'];
   var sound_list = ['baa0', 'baa1', 'baa2'];
   game = new BlackSheep();
@@ -168,6 +168,7 @@ Fence.prototype.draw = function(ctx) {
 function Cannon(game, lane, x) {
   Entity.call(this, game, true, true, true);
   this.sprite = game.images['cannon'];
+  this.phantom_sprite = game.images['cannon-phantom'];
   this.lane = lane;
   this.x = x;
   this.y = lane*60 + 30;
@@ -309,6 +310,7 @@ Puddle.prototype.draw = function(ctx) {
 function Tin(game, lane, x) {
   Entity.call(this, game, true, true, true);
   this.sprite = game.images['tin'];
+  this.phantom_sprite = game.images['tin-phantom'];
   this.lane = lane;
   this.x = x;
   this.y = lane*60 + 30;
