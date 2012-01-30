@@ -612,11 +612,13 @@ Entity.prototype.checkMouseInputs = function() {
 Entity.prototype.saveState = function() {
   this.lastX = this.x;
   this.lastY = this.y;
+  this.lastLayer = this.world.layer;
 }
 
 Entity.prototype.restoreState = function() {
   this.x = this.lastX;
   this.y = this.lastY;
+  this.game.setEntityLayer(this, this.lastLayer);
 }
 
 Entity.prototype.mouseDown = function(event) {
@@ -624,6 +626,9 @@ Entity.prototype.mouseDown = function(event) {
     this.saveState();
     this.dragged = true;
     this.game.draggedEntity = this;
+
+    // put the entity foreground
+    this.game.setEntityLayer(this, 100);
 
     // create phantom
     var phantom = new Phantom(this.game, this);
