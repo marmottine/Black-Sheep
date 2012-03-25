@@ -33,6 +33,8 @@ BlackSheep.prototype = new Engine();
 BlackSheep.prototype.constructor = BlackSheep;
 
 BlackSheep.prototype.start = function() {
+  this.wave_time = 0;
+
   this.createType("sheep");
   this.createType("fence");
   this.createType("cannon");
@@ -49,18 +51,27 @@ BlackSheep.prototype.start = function() {
     this.addEntity(fence, "fence", 10*(i+1));
   }
 
-  var sheep = new Sheep(this, 2, 540);
-  this.addEntity(sheep, "sheep", 37);
-  sheep = new Sheep(this, 2, 600);
-  this.addEntity(sheep, "sheep", 37);
-  sheep = new Sheep(this, 2, 620);
-  this.addEntity(sheep, "sheep", 37);
-  sheep = new Sheep(this, 2, 650);
-  this.addEntity(sheep, "sheep", 37);
-  sheep = new Sheep(this, 4, 650);
-  this.addEntity(sheep, "sheep", 57);
-  sheep = new Sheep(this, 5, 650);
-  this.addEntity(sheep, "sheep", 67);
+  this.waves = []
+  function compare_wrt_time(lhs, rhs) {
+    if (lhs.time < rhs.time) {
+      return -1;
+    }
+    if (lhs.time > rhs.time) {
+      return 1;
+    }
+    return 0;
+  }
+
+  var wave = [{ctor:Sheep, layer:37, lane:2, time:12, type:"sheep"},
+              {ctor:Sheep, layer:37, lane:2, time:8, type:"sheep"}];
+  this.waves.push(wave.sort(compare_wrt_time));
+
+  wave = [{ctor:Sheep, layer:47, lane:3, time:20, type:"sheep"},
+          {ctor:Sheep, layer:47, lane:3, time:24, type:"sheep"},
+          {ctor:Sheep, layer:47, lane:3, time:22, type:"sheep"},
+          {ctor:Sheep, layer:67, lane:5, time:26, type:"sheep"},
+          {ctor:Sheep, layer:57, lane:4, time:30, type:"sheep"}];
+  this.waves.push(wave.sort(compare_wrt_time));
 
   var cannon = new Cannon(this, 3, 180);
   this.addEntity(cannon, "cannon", 45);
@@ -79,6 +90,24 @@ BlackSheep.prototype.start = function() {
 }
 
 BlackSheep.prototype.update = function() {
+  this.time += this.delta;
+  var i = 0;
+  while (this.waves.length != 0 && this.waves[0].length != 0) {
+    entity_descr = this.waves[0][0];
+    if (this.time >= entity_descr.time) {
+      var entity = new entity_descr.ctor(this, entity_descr.lane, 650);
+      this.addEntity(entity, entity_descr.type, entity_descr.layer);
+      this.waves[0].shift();
+    }
+    else {
+      break;
+    }
+    if (this.waves[0].length == 0) {
+      this.waves.shift();
+    }
+    i++;
+  }
+
   Engine.prototype.update.call(this);
 }
 
