@@ -241,11 +241,14 @@ Engine.prototype.update = function() {
         console.log("warning: type " + t + " does not exist and will not be updated");
         continue;
       }
+      entity_no = 0;
       node = this.world.types[t].head;
       while (node !== null) {
         node.entity.update();
         node = node.Tnext;
+        entity_no ++;
       }
+      //console.log("updated " + entity_no + " entities of type " + t);
     }
   }
   else {
@@ -518,9 +521,6 @@ function Entity(game, draggable, hasExclusivePlace, sticksToLanes) {
 Entity.prototype.update = function() {
   if (this.draggable) {
     this.checkMouseInputs.call(this);
-  }
-  if (this.outsideScreen()) {
-    this.toberemoved = true;
   }
 }
 

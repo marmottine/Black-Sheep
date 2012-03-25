@@ -112,6 +112,11 @@ Sheep.prototype.constructor = Sheep;
 
 Sheep.prototype.update = function() {
   this.x -= this.speed * this.game.delta;
+
+  if (this.outsideScreen()) {
+    this.toberemoved = true;
+  }
+
   Entity.prototype.update.call(this);
 }
 
@@ -196,7 +201,7 @@ Cannon.prototype.update = function() {
       this.firingTimeout -= 1 * this.game.delta;
     }
   }
-  
+
   Entity.prototype.update.call(this);
 }
 
@@ -241,6 +246,10 @@ Paintball.prototype.update = function() {
   }
   if (node !== null) {
     node.entity.hit();
+    this.toberemoved = true;
+  }
+
+  if (this.outsideScreen()) {
     this.toberemoved = true;
   }
 
