@@ -261,8 +261,19 @@ Engine.prototype.update = function() {
   for each (var l in this.world.layers) {
     node = l.head;
     while (node !== null) {
-      if (node.entity.toberemoved) {
-        this.removeEntity(node.entity);
+      entity = node.entity
+      if (entity.toberemoved) {
+        if (entity.hasExclusivePlace) {
+          index = this.exclusivePlaceEntities.indexOf(entity);
+          if (index == -1) {
+            console.log('Error while removing entity ' + entity.world.type + '. '
+                + 'Entity has exclusive place but is not in the corresponding list.');
+          }
+          else {
+            this.exclusivePlaceEntities.splice(index, 1);
+          }
+        }
+        this.removeEntity(entity);
       }
       node = node.Lnext;
     }
